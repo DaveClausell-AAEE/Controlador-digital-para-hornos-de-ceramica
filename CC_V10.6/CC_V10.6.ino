@@ -162,7 +162,7 @@ void loop() {
 }
 
 void guardarConfiguracion() {
-  File f = LittleFS.open("/config.bin", "w");
+  fs::File f = LittleFS.open("/config.bin", "w");
   if (f) {
     f.write((uint8_t*)&calibracionOffset, sizeof(calibracionOffset));
     f.write((uint8_t*)&numProgramasGuardados, sizeof(numProgramasGuardados));
@@ -173,7 +173,7 @@ void guardarConfiguracion() {
 
 void cargarConfiguracion() {
   if (!LittleFS.exists("/config.bin")) { cargarProgramaDePrueba(); guardarConfiguracion(); return; }
-  File f = LittleFS.open("/config.bin", "r");
+  fs::File f = LittleFS.open("/config.bin", "r");
   if (f) {
     f.read((uint8_t*)&calibracionOffset, sizeof(calibracionOffset));
     f.read((uint8_t*)&numProgramasGuardados, sizeof(numProgramasGuardados));
@@ -241,10 +241,16 @@ void procesarEntrada(bool subiendo, bool bajando, bool ok, bool exit) {
         break;
       case INFO_WIFI: if (ok || exit) estadoActual = MENU_AJUSTES; break;
       case MENU_CALIBRACION:
-        if (subiendo) valorCalibracionEditado += 0.1;
-        if (bajando) valorCalibracionEditado -= 0.1;
+        if (subiendo) valorCalibracionEditado += 1.0;
+        if (bajando) valorCalibracionEditado -= 1.0;
         if (exit) estadoActual = MENU_AJUSTES;
-        if (ok) { calibracionOffset = temperaturaCrudaSimulada - valorCalibracionEditado; guardarConfiguracion(); estadoActual = MENU_AJUSTES; }
+        if (ok) { 
+           if (!isnan(currentTemperature)) {
+               calibracionOffset = valorCalibracionEditado - currentTemperature; 
+               guardarConfiguracion(); 
+           }
+           estadoActual = MENU_AJUSTES; 
+        }
         break;
       case MENU_SELECCION_PROG:
         if (subiendo) menuSeleccionProgCursor = (menuSeleccionProgCursor - 1 + (numProgramasGuardados + 1)) % (numProgramasGuardados + 1);
@@ -330,7 +336,6 @@ void ejecutarCicloDeHorneado() {
 }
 
 void actualizarPantalla() {
-  if (!necesitaRefresco) return;
   if (estadoActual != estadoPrevio) {
     tft.fillRect(0, STATUS_BAR_HEIGHT, tft.width(), tft.height() - STATUS_BAR_HEIGHT, TFT_BLACK);
     dibujarBarraDeEstado();
@@ -349,15 +354,30 @@ void actualizarPantalla() {
     }
   } else {
     actualizarTemperaturaEnBarra();
-    if (estadoActual == STAND_BY) dibujarPantallaStandBy(false);
-    else if (estadoActual == CALENTANDO || estadoActual == MANTENIENDO) dibujarPantallaCalentando(false);
-    else if (estadoActual == MENU_CONFIG_PROG || estadoActual == EDITANDO_NOMBRE) dibujarMenuConfigProg(false);
+    if (necesitaRefresco) {
+        if (estadoActual == STAND_BY) dibujarPantallaStandBy(false);
+        else if (estadoActual == MENU_PRINCIPAL) dibujarMenuPrincipal(false);
+        else if (estadoActual == MENU_AJUSTES) dibujarMenuAjustes(false);
+        else if (estadoActual == MENU_SELECCION_PROG) dibujarMenuSeleccionProg(false);
+        else if (estadoActual == MENU_CONFIG_PROG || estadoActual == EDITANDO_NOMBRE) dibujarMenuConfigProg(false);
+        else if (estadoActual == CALENTANDO || estadoActual == MANTENIENDO) dibujarPantallaCalentando(false);
+    }
   }
   estadoPrevio = estadoActual; necesitaRefresco = false;
 }
 
 void dibujarBarraDeEstado() { tft.fillRect(0, 0, tft.width(), STATUS_BAR_HEIGHT, TFT_DARKGREY); actualizarTemperaturaEnBarra(); }
-void actualizarTemperaturaEnBarra() { tft.fillRect(0, 0, 100, STATUS_BAR_HEIGHT, TFT_DARKGREY); tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(5, 7); tft.print(currentTemperature, 0); tft.print("c"); }
+void actualizarTemperaturaEnBarra() {
+  static float lastPrintedTemp = -999.0;
+  if (abs(currentTemperature - lastPrintedTemp) < 1.0) return;
+  lastPrintedTemp = currentTemperature;
+  tft.fillRect(0, 0, 100, STATUS_BAR_HEIGHT, TFT_DARKGREY); 
+  tft.setTextColor(TFT_WHITE); 
+  tft.setTextSize(2); 
+  tft.setCursor(5, 7); 
+  tft.print(currentTemperature, 0); 
+  tft.print("c"); 
+}
 void dibujarPantallaStandBy(bool r) {
   if (r) { tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(50, 60); tft.print("Temp. Actual:"); tft.setCursor(50, 150); tft.print("Programa Listo:"); tft.setTextColor(TFT_CYAN); tft.setCursor(60, 180); tft.println(programas[programaActivoIndex].nombre); }
   tft.fillRect(80, 90, 100, 40, TFT_BLACK); tft.setTextColor(TFT_YELLOW); tft.setTextSize(4); tft.setCursor(80, 90); tft.print(currentTemperature, 0); tft.print("c");
@@ -367,9 +387,12 @@ void dibujarMenuPrincipal(bool r) { for (int i = 0; i < 3; i++) dibujarItemMenu(
 void dibujarMenuAjustes(bool r) { for (int i = 0; i < 2; i++) dibujarItemMenu(i, i == menuAjustesCursor, menuAjustesItems[i], 90); }
 void dibujarItemMenuSeleccion(int i, bool s) { int yp = 40 + (i * 35); tft.fillRect(0, yp, tft.width(), 30, s ? TFT_WHITE : TFT_BLACK); tft.setTextColor(s ? TFT_BLACK : (i < numProgramasGuardados ? TFT_WHITE : TFT_GREEN)); tft.setCursor(10, yp + 7); tft.println(i < numProgramasGuardados ? programas[i].nombre : "+ Crear Programa"); }
 void dibujarMenuSeleccionProg(bool r) { for (int i = 0; i <= numProgramasGuardados; i++) dibujarItemMenuSeleccion(i, i == menuSeleccionProgCursor); }
-void dibujarMenuConfigProg(bool r) { if (r) tft.fillRect(0, 30, tft.width(), 210, TFT_BLACK); dibujarLineaDeEtapa(-1); for (int i = 0; i < programas[programaEnEdicionIndex].numEtapas; i++) dibujarLineaDeEtapa(i); 
+void dibujarMenuConfigProg(bool r) { 
+  tft.fillRect(0, 30, tft.width(), 210, TFT_BLACK); 
+  dibujarLineaDeEtapa(-1); 
+  for (int i = 0; i < programas[programaEnEdicionIndex].numEtapas; i++) dibujarLineaDeEtapa(i); 
   int baseYP = 80 + programas[programaEnEdicionIndex].numEtapas * 25;
-  dibujarItemMenu(0, configProgCursorVertical == programas[programaEnEdicionIndex].numEtapas + 1, "+ Añadir Etapa", baseYP);
+  dibujarItemMenu(0, configProgCursorVertical == programas[programaEnEdicionIndex].numEtapas + 1, "+ Anadir Etapa", baseYP);
   dibujarItemMenu(1, configProgCursorVertical == programas[programaEnEdicionIndex].numEtapas + 2, "- Borrar Etapa", baseYP);
 }
 void dibujarLineaDeEtapa(int idx) {
@@ -405,8 +428,8 @@ void dibujarPantallaInfoWiFi() {
   tft.setTextColor(TFT_YELLOW); tft.setCursor(20, 200); tft.print("Presione OK para volver");
 }
 void dibujarPantallaCalentando(bool r) {
-  if (r) { tft.setTextColor(TFT_ORANGE); tft.setTextSize(3); tft.setCursor(20, 45); tft.print(estadoActual == CALENTANDO ? "CALENTANDO" : "MANTENIENDO"); tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(20, 85); tft.print("Meta:"); }
-  tft.fillRect(150, 45, 120, 60, TFT_BLACK); tft.setTextColor(TFT_YELLOW); tft.setTextSize(4); tft.setCursor(180, 45); tft.print(currentTemperature, 0); tft.print("c");
+  if (r) { tft.setTextColor(TFT_ORANGE); tft.setTextSize(2); tft.setCursor(20, 45); tft.print(estadoActual == CALENTANDO ? "CALENTANDO" : "MANTENIENDO"); tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(20, 85); tft.print("Meta:"); }
+  tft.fillRect(150, 45, 120, 30, TFT_BLACK); tft.setTextColor(TFT_YELLOW); tft.setTextSize(3); tft.setCursor(180, 45); tft.print(currentTemperature, 0); tft.print("c");
   tft.setTextColor(TFT_GREEN); tft.setTextSize(2); tft.setCursor(90, 85); tft.print(programas[programaActivoIndex].etapas[etapaActualIndex].temperatura); tft.print("c");
   dibujarGrafica();
 }

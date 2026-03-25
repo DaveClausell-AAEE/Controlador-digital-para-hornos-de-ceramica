@@ -4,6 +4,16 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
+## [V10.7] - 2026-03-25
+### 🎨 Mejoras de Interfaz y Correcciones
+- **Corrección de Menú de Calibración:** Se ajustó la lógica para evitar actualizaciones si el sensor no está disponible y mejorar la experiencia de edición del offset.
+- **Corrección de Tipografía:** Reemplazo de "ñ" por "n" en etiquetas de menú para garantizar compatibilidad con el set de caracteres del display.
+- **Optimización de Refresco:** Se mejoró el refresco de pantalla en los menús de configuración para eliminar artefactos visuales y texto remanente.
+- **Layout de Pantalla:** Se ajustó el layout de la pantalla de "Calentando/Manteniendo" para evitar la superposición de texto y números de temperatura.
+- **Estabilidad de Lectura:** Se optimizó el refresco de la temperatura en la barra superior para evitar parpadeos innecesarios.
+
+---
+
 ## [V10.6] - 2026-03-24 (Actual)
 ### 📊 Visualización Avanzada y UX
 - **Gráfica de Temperatura en Tiempo Real:**
