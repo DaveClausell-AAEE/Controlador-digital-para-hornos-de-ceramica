@@ -1,5 +1,5 @@
 // =================================================================
-// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V10.6       ==
+// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V10.8       ==
 // =================================================================
 //      (Gráfica en vivo, Confirmación de Inicio y WiFi Info)
 //
@@ -36,6 +36,12 @@ struct Programa { char nombre[MAX_LARGO_NOMBRE]; Etapa etapas[MAX_ETAPAS]; int n
 TFT_eSPI tft = TFT_eSPI();
 
 // --- VARIABLES DE ESTADO ---
+struct RecoveryData {
+  int estadoActual;
+  int etapaActualIndex;
+  unsigned long tiempoInicioEtapa;
+};
+
 Programa programas[MAX_PROGRAMAS];
 int numProgramasGuardados = 0;
 int programaActivoIndex = 0;
@@ -160,6 +166,8 @@ void loop() {
   
   actualizarPantalla();
 }
+
+void cargarProgramaDePrueba() { strcpy(programas[0].nombre, "CERAMICA 1"); programas[0].numEtapas = 2; programas[0].etapas[0] = {300, 400, 10}; programas[0].etapas[1] = {200, 600, 5}; numProgramasGuardados = 1; }
 
 void guardarConfiguracion() {
   fs::File f = LittleFS.open("/config.bin", "w");
@@ -448,4 +456,28 @@ void dibujarGrafica() {
 void dibujarPantallaEnfriando(bool r) { tft.setTextColor(TFT_GREEN); tft.setTextSize(3); tft.setCursor(80, 70); tft.print("FINALIZADO"); }
 void dibujarPantallaCalibracion() { tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(20, 100); tft.print("Lectura Cruda:"); tft.setCursor(200, 100); tft.setTextColor(TFT_YELLOW); tft.print(temperaturaCrudaSimulada, 1); tft.setTextColor(TFT_WHITE); tft.setCursor(20, 140); tft.print("Temp. Real:"); tft.fillRect(190, 138, 80, 20, TFT_CYAN); tft.setTextColor(TFT_BLACK); tft.setCursor(200, 140); tft.print(valorCalibracionEditado, 1); }
 void dibujarPantallaFallo(const char* msg) { tft.fillScreen(TFT_RED); tft.setTextColor(TFT_WHITE); tft.setTextSize(3); tft.setCursor(40, 50); tft.print("FALLO!"); tft.setTextSize(2); tft.setCursor(10, 100); tft.print(msg); tft.setCursor(10, 180); tft.print("Presione OK para reset"); }
-void cargarProgramaDePrueba() { strcpy(programas[0].nombre, "CERAMICA 1"); programas[0].numEtapas = 2; programas[0].etapas[0] = {300, 400, 10}; programas[0].etapas[1] = {200, 600, 5}; numProgramasGuardados = 1; }
+void guardarEstadoRecuperacion() {
+  fs::File f = LittleFS.open("/recovery.bin", "w");
+  if (f) {
+    RecoveryData data = {(int)estadoActual, etapaActualIndex, tiempoInicioEtapa};
+    f.write((uint8_t*)&data, sizeof(data));
+    f.close();
+  }
+}
+
+void cargarEstadoRecuperacion() {
+  if (LittleFS.exists("/recovery.bin")) {
+    fs::File f = LittleFS.open("/recovery.bin", "r");
+    if (f) {
+      RecoveryData data;
+      f.read((uint8_t*)&data, sizeof(data));
+      f.close();
+      if (data.estadoActual != STAND_BY) {
+        estadoActual = (EstadoHorno)data.estadoActual;
+        etapaActualIndex = data.etapaActualIndex;
+        tiempoInicioEtapa = data.tiempoInicioEtapa;
+      }
+      LittleFS.remove("/recovery.bin"); 
+    }
+  }
+}

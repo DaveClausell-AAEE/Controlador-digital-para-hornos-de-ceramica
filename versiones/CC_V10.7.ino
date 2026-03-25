@@ -1,5 +1,5 @@
 // =================================================================
-// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V10.6       ==
+// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V10.7       ==
 // =================================================================
 //      (Gráfica en vivo, Confirmación de Inicio y WiFi Info)
 //
