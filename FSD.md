@@ -82,11 +82,11 @@ Conexiones:
 | **Error de Etapa** | Si una rampa es imposible de alcanzar por el hardware, el sistema notificará pero mantendrá el control PID al máximo. | **ACTIVO** |
 
 ## 6. Estructura del Proyecto
-- **/CC_V10.6/**: Directorio principal con el código fuente de la versión actual (Arduino).
-- **/versiones/**: Repositorio de versiones anteriores del firmware (.ino) para referencia histórica.
+- **/versiones/**: Repositorio histórico de las versiones del firmware (.ino).
 - **/Diagnostic_Hardware/**: Scripts de prueba para verificar el funcionamiento de la pantalla, sensor y relé.
 - **FSD.md**: Especificaciones funcionales y técnicas del sistema.
 - **CHANGELOG.md**: Registro histórico de cambios y mejoras implementadas.
+- **README.md**: Documentación de hardware y guía rápida de configuración.
 
 ## 7. Estado del Desarrollo y Próximos Pasos
 ### 7.1 Hitos Completados ✅
