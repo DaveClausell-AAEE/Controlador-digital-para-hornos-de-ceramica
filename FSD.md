@@ -12,13 +12,37 @@ Este proyecto consiste en un sistema de control de temperatura de alta precisió
 
 ## 3. Pinout Detallado (Conexiones)
 
+```text
+       ESP32 (38-pin Dev Module)
+      +------------------------+
+      |        ...             |
+(D12) | TFT_LED    GPIO 17 (R) | (Relay)
+(D14) | [NC]       GPIO 27 (B) | (Buzzer)
+(D26) | BTN_UP     GPIO 25 (D) | (BTN_DOWN)
+(D33) | BTN_OK     GPIO 32 (E) | (BTN_EXIT)
+      |                        |
+      |   SPI (MAX31855/TFT)   |
+(D18) | SCK  MISO 19  MOSI 23  |
+(D5 ) | CS1  CS2  15           |
+      +------------------------+
+
+Conexiones:
+- Relé (Resistencia): GPIO 17
+- Buzzer (Alarma):    GPIO 27
+- TFT Backlight (BL): GPIO 12
+- Pulsadores (PULLUP):
+  UP: 26, DOWN: 25, OK: 33, EXIT: 32
+```
+
 | Componente | Pin ESP32 | Función | Tipo de Señal |
 |------------|-----------|---------|---------------|
 | **Relé** | GPIO 17 | Control de Resistencia | Digital (Salida) |
+| **Buzzer** | GPIO 27 | Alarma Sonora | Digital (Salida) |
 | **Botón UP** | GPIO 26 | Navegación / Incremento | Digital (Entrada) |
 | **Botón DOWN** | GPIO 25 | Navegación / Decremento | Digital (Entrada) |
 | **Botón OK** | GPIO 33 | Confirmar / Editar | Digital (Entrada) |
 | **Botón EXIT** | GPIO 32 | Volver / Cancelar | Digital (Entrada) |
+| **TFT LED** | GPIO 12 | Retroiluminación | Digital (Salida) |
 | **MAX31855 CLK**| GPIO 18 | Reloj SPI (Shared) | Digital (Salida) |
 | **MAX31855 MISO**| GPIO 19 | Datos del Sensor | Digital (Entrada) |
 | **MAX31855 CS** | GPIO 5 | Selección de Chip | Digital (Salida) |
@@ -28,7 +52,6 @@ Este proyecto consiste en un sistema de control de temperatura de alta precisió
 | **TFT CS** | GPIO 15 | Selección de Chip TFT | Digital (Salida) |
 | **TFT DC/RS** | GPIO 2 | Datos/Comando TFT | Digital (Salida) |
 | **TFT RST** | GPIO 4 | Reset Pantalla | Digital (Salida) |
-| **TFT LED** | GPIO 12 | Retroiluminación | Digital (Salida) |
 
 ## 4. Funcionalidades Principales
 ### 4.1 Gestión de Programas
