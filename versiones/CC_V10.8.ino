@@ -13,13 +13,23 @@
 
 // --- PINOUT ---
 #define RELAY_PIN 17
+#define BUZZER_PIN 27
 #define BTN_UP_PIN    26
 #define BTN_DOWN_PIN  25
 #define BTN_OK_PIN    33
 #define BTN_EXIT_PIN  32
 #define TFT_LED       12 
 
-// Pinout MAX31855
+// ...
+
+void suenaBuzzer(int duracion, int veces = 1) {
+  for(int i=0; i<veces; i++) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(duracion);
+    digitalWrite(BUZZER_PIN, LOW);
+    if (i < veces - 1) delay(100);
+  }
+}
 #define MAXCS   5
 Adafruit_MAX31855 thermocouple(MAXCS);
 
@@ -121,7 +131,6 @@ void dibujarGrafica();
 void cargarProgramaDePrueba();
 void guardarConfiguracion();
 void cargarConfiguracion();
-
 void setup() {
   Serial.begin(115200);
   pinMode(BTN_UP_PIN, INPUT_PULLUP);
@@ -129,7 +138,9 @@ void setup() {
   pinMode(BTN_OK_PIN, INPUT_PULLUP);
   pinMode(BTN_EXIT_PIN, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH); 
+  digitalWrite(BUZZER_PIN, LOW);
   pinMode(TFT_LED, OUTPUT);
   digitalWrite(TFT_LED, HIGH); 
 
@@ -137,7 +148,8 @@ void setup() {
   if (!thermocouple.begin()) Serial.println("MAX31855 error");
   if(!LittleFS.begin(true)) Serial.println("LittleFS error");
   cargarConfiguracion();
-  
+  cargarEstadoRecuperacion(); // <--- Recuperación añadida
+
   hornoPID.SetOutputLimits(0, windowSize);
   hornoPID.SetMode(AUTOMATIC);
   for(int i=0; i<GRAPH_POINTS; i++) tempHistory[i] = 0;
@@ -145,6 +157,8 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   necesitaRefresco = true;
   actualizarPantalla();
+
+  suenaBuzzer(100, 2);
 }
 
 void loop() {
@@ -320,7 +334,7 @@ void ejecutarCicloDeHorneado() {
   if (estadoActual != CALENTANDO && estadoActual != MANTENIENDO) { digitalWrite(RELAY_PIN, HIGH); return; }
   if (millis() - ultimoCheckWatchdog > INTERVALO_WATCHDOG) {
     if (digitalRead(RELAY_PIN) == LOW && (currentTemperature < tempEnUltimoCheck + 2.0)) {
-       errorMsgStr = "SIN AUMENTO DE TEMP: REVISAR RESISTENCIA"; estadoActual = FALLO; digitalWrite(RELAY_PIN, HIGH); return;
+       errorMsgStr = "SIN AUMENTO DE TEMP: REVISAR RESISTENCIA"; estadoActual = FALLO; digitalWrite(RELAY_PIN, HIGH); suenaBuzzer(500, 3); return;
     }
     ultimoCheckWatchdog = millis(); tempEnUltimoCheck = currentTemperature;
   }
@@ -330,12 +344,12 @@ void ejecutarCicloDeHorneado() {
   if (estadoActual == CALENTANDO) {
     pidSetpoint = tempInicioEtapa + (etapa.rampa * (tSim / 3600000.0));
     if (pidSetpoint > etapa.temperatura) pidSetpoint = etapa.temperatura;
-    if (currentTemperature >= etapa.temperatura) { estadoActual = MANTENIENDO; tiempoInicioEtapa = millis(); pidSetpoint = etapa.temperatura; }
+    if (currentTemperature >= etapa.temperatura) { estadoActual = MANTENIENDO; tiempoInicioEtapa = millis(); pidSetpoint = etapa.temperatura; guardarEstadoRecuperacion(); }
   } else if (estadoActual == MANTENIENDO) {
     if ((millis() - tiempoInicioEtapa) >= ((unsigned long)etapa.tiempo * 60000 / SIM_MULTIPLIER)) {
       etapaActualIndex++;
-      if (etapaActualIndex >= programas[programaActivoIndex].numEtapas) estadoActual = ENFRIANDO;
-      else { estadoActual = CALENTANDO; tiempoInicioEtapa = millis(); tempInicioEtapa = currentTemperature; }
+      if (etapaActualIndex >= programas[programaActivoIndex].numEtapas) { estadoActual = ENFRIANDO; LittleFS.remove("/recovery.bin"); suenaBuzzer(1000, 1); }
+      else { estadoActual = CALENTANDO; tiempoInicioEtapa = millis(); tempInicioEtapa = currentTemperature; guardarEstadoRecuperacion(); }
     }
   }
   hornoPID.Compute();
