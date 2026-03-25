@@ -4,7 +4,7 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V10.7] - 2026-03-25
+## [V10.7] - 2026-03-25 (Actual)
 ### 🎨 Mejoras de Interfaz y Correcciones
 - **Corrección de Menú de Calibración:** Se ajustó la lógica para evitar actualizaciones si el sensor no está disponible y mejorar la experiencia de edición del offset.
 - **Corrección de Tipografía:** Reemplazo de "ñ" por "n" en etiquetas de menú para garantizar compatibilidad con el set de caracteres del display.
@@ -14,7 +14,7 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V10.6] - 2026-03-24 (Actual)
+## [V10.6] - 2026-03-24
 ### 📊 Visualización Avanzada y UX
 - **Gráfica de Temperatura en Tiempo Real:**
     - Se añadió un área de visualización gráfica durante el horneado.
