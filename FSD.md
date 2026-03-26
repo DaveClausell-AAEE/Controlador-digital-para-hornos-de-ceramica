@@ -42,7 +42,8 @@ Conexiones:
 | **Botón DOWN** | GPIO 25 | Navegación / Decremento | Digital (Entrada) |
 | **Botón OK** | GPIO 33 | Confirmar / Editar | Digital (Entrada) |
 | **Botón EXIT** | GPIO 32 | Volver / Cancelar | Digital (Entrada) |
-| **TFT LED** | GPIO 12 | Retroiluminación | Digital (Salida) |
+| TFT LED | GPIO 12 | Retroiluminacion | PWM (0-255) |
+
 | **MAX31855 CLK**| GPIO 18 | Reloj SPI (Shared) | Digital (Salida) |
 | **MAX31855 MISO**| GPIO 19 | Datos del Sensor | Digital (Entrada) |
 | **MAX31855 CS** | GPIO 5 | Selección de Chip | Digital (Salida) |
@@ -71,6 +72,15 @@ Conexiones:
 - Ajuste de **Offset** en tiempo real para corregir desviaciones de la termocupla.
 - Visualización de temperatura cruda vs temperatura corregida.
 
+### 4.4 Personalización y UI Avanzada
+- **Control de Brillo:** Ajuste de intensidad lumínica desde el menú de ajustes (PWM).
+- **Splash Screen:** Pantalla de bienvenida `"Controlador by DAC LAB"` con animación de carga al iniciar.
+- **Barra de Estado Proactiva:** Muestra la temperatura y el estado actual del horno (LISTO, CALENT., etc.) de forma persistente.
+- **Info Sistema:** Medidor visual del porcentaje de ocupación de la memoria LittleFS.
+
+### 4.5 Ajustes PID Dinámicos
+- Menú interactivo para modificar los parámetros Kp, Ki y Kd sin necesidad de modificar el código fuente.
+
 ## 5. Casos de Prueba y Manejo de Errores
 
 | Caso de Prueba | Acción del Sistema | Estado de Seguridad |
@@ -78,7 +88,7 @@ Conexiones:
 | **Falla del Sensor (MAX31855)** | Si el sensor devuelve `NaN` o error de conexión, se detiene el ciclo de horneado inmediatamente. | **Relé OFF (HIGH)** |
 | **Sobre-temperatura** | Si la temperatura supera el límite de seguridad (ej. 1200°C), se activa la alarma y se corta el relé. | **Relé OFF (HIGH)** |
 | **Desconexión de Relé** | El sistema detecta si no hay cambio de temperatura tras 10 min de activación (Watchdog térmico). | **Estado de FALLO** |
-| **Pérdida de Energía** | Al reiniciar, el horno debe estar en STAND-BY por seguridad (Revisar para futura implementación de autorecovery). | **STAND-BY** |
+| **Pérdida de Energía** | Al reiniciar, el horno consulta `/recovery.bin` para intentar retomar el ciclo donde quedó. | **AUTORECOVERY** |
 | **Error de Etapa** | Si una rampa es imposible de alcanzar por el hardware, el sistema notificará pero mantendrá el control PID al máximo. | **ACTIVO** |
 
 ## 6. Estructura del Proyecto
@@ -91,12 +101,12 @@ Conexiones:
 ## 7. Estado del Desarrollo y Próximos Pasos
 ### 7.1 Hitos Completados ✅
 - Implementación de la librería `Adafruit_MAX31855` para lecturas reales del sensor.
-- Persistencia de datos mediante `LittleFS` para guardar programas y calibración.
+- Persistencia de datos mediante `LittleFS` para guardar programas, calibración, PID y brillo.
 - Sistema de edición visual completo para programas y etapas.
-- Gráfica de temperatura en tiempo real y barra de estado dinámica.
+- Gráfica de temperatura en tiempo real y barra de estado dinámica con estados claros.
+- **Auto-recovery:** Guardado de estado dinámico en LittleFS.
+- **Alarmas Sonoras:** Integración completa de buzzer con sonidos diferenciados.
 
 ### 7.2 Próximos Pasos 🚀
-1. **Optimización de Gráficos:** Mejorar el escalado de la gráfica y añadir etiquetas de tiempo.
-2. **Implementación de WiFi:** Añadir un servidor web básico para monitoreo remoto desde el celular.
-3. **Auto-recovery:** Guardar el estado del ciclo actual en LittleFS para retomar el horneado tras un corte de luz.
-4. **Alarmas Sonoras:** Integrar un buzzer para notificar fallos o fin de ciclo.
+1. **Implementación de WiFi (Pendiente):** Añadir un servidor web básico para monitoreo remoto desde el celular.
+2. **Optimización de Gráficos:** Mejorar el escalado de la gráfica y añadir etiquetas de tiempo.

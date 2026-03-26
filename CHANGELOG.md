@@ -4,7 +4,29 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V10.7] - 2026-03-25 (Actual)
+## [V10.9] - 2026-03-26 (Actual)
+### 🚀 Nuevas Funcionalidades y Personalización
+- **Personalización de Bienvenida:** Nueva Splash Screen con el texto `"Controlador by DAC LAB"` y animación de carga.
+- **Control de Brillo por Software:**
+    - Añadida opción en el menú de Ajustes para regular la intensidad de la pantalla (PWM en GPIO 12).
+    - El nivel de brillo se persiste automáticamente en LittleFS.
+- **Gestión de Memoria Visual:** Nuevo apartado en **Info Sistema** que muestra el porcentaje de uso de LittleFS.
+- **Ajustes PID en Vivo:** Menú dedicado para modificar Kp, Ki y Kd desde la interfaz sin necesidad de reprogramar.
+- **Status Bar Informativo:** La barra superior ahora muestra el estado del horno (LISTO, CALENT., MANTEN., etc.) de forma persistente.
+- **Traducción de Estados:** Cambio de "IDLE" a "LISTO" para una interfaz más intuitiva en español.
+
+---
+
+## [V10.8] - 2026-03-25
+### 🛡️ Seguridad y Sonido
+- **Sistema de Auto-Recuperación:** Implementado guardado de estado en `/recovery.bin` para retomar el horneado tras un fallo de energía.
+- **Integración de Buzzer:**
+    - Sonidos diferenciados para: Inicio de sistema (doble pitido corto), Fin de ciclo (pitido largo) y Fallo (triple pitido de alerta).
+- **Herramienta de Diagnóstico V1.1:** Actualizada para incluir pruebas de sonido y corregir el pinout del buzzer (GPIO 27).
+
+---
+
+## [V10.7] - 2026-03-25
 ### 🎨 Mejoras de Interfaz y Correcciones
 - **Corrección de Menú de Calibración:** Se ajustó la lógica para evitar actualizaciones si el sensor no está disponible y mejorar la experiencia de edición del offset.
 - **Corrección de Tipografía:** Reemplazo de "ñ" por "n" en etiquetas de menú para garantizar compatibilidad con el set de caracteres del display.

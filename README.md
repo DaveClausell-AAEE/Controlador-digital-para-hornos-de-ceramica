@@ -2,6 +2,18 @@
 
 Este proyecto es un controlador de temperatura profesional para hornos de cerámica basado en el microcontrolador **ESP32**. Permite gestionar programas de horneado por etapas con rampas de temperatura, tiempos de mantenimiento y un sistema de control PID.
 
+## Características Principales (V10.9)
+- **Interfaz Gráfica:** Pantalla TFT ILI9341 con menús fluidos y gráfica en tiempo real.
+- **Splash Screen:** Pantalla de bienvenida personalizada `"Controlador by DAC LAB"`.
+- **Gestión de Programas:** Soporte para hasta 5 programas con 10 etapas cada uno.
+- **Control PID Editable:** Ajuste de Kp, Ki y Kd directamente desde el menú.
+- **Control de Brillo:** Ajuste por software mediante PWM (GPIO 12).
+- **Seguridad y Recuperación:** 
+  - Watchdog térmico.
+  - Autorecovery tras fallo de alimentación.
+  - Alarma sonora (Buzzer).
+- **Persistencia:** Guardado automático en LittleFS de todos los parámetros.
+
 ## Hardware y Pinout (Conexiones)
 
 ```text
