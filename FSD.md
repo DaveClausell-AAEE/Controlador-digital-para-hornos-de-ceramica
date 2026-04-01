@@ -103,10 +103,11 @@ Conexiones:
 - Implementación de la librería `Adafruit_MAX31855` para lecturas reales del sensor.
 - Persistencia de datos mediante `LittleFS` para guardar programas, calibración, PID y brillo.
 - Sistema de edición visual completo para programas y etapas.
-- Gráfica de temperatura en tiempo real y barra de estado dinámica con estados claros.
+- Gráfica de temperatura en tiempo real con escalado dinámico y etiquetas de tiempo.
 - **Auto-recovery:** Guardado de estado dinámico en LittleFS.
 - **Alarmas Sonoras:** Integración completa de buzzer con sonidos diferenciados.
+- **Conectividad WiFi:** Servidor web integrado para monitoreo remoto y pantalla de info sistema con IP.
 
 ### 7.2 Próximos Pasos 🚀
-1. **Implementación de WiFi (Pendiente):** Añadir un servidor web básico para monitoreo remoto desde el celular.
-2. **Optimización de Gráficos:** Mejorar el escalado de la gráfica y añadir etiquetas de tiempo.
+1. **Seguridad Avanzada:** Implementar un sistema de notificaciones por email/telegram en caso de fallo.
+2. **Histórico de Horneados:** Guardar un log de los últimos horneados en LittleFS para descargar vía web.

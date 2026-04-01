@@ -4,7 +4,25 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V10.9] - 2026-03-26 (Actual)
+## [V11.0] - 2026-04-01 (Actual)
+### 🌐 Conectividad y Monitoreo Remoto
+- **Implementación de WiFi:**
+    - Conexión automática a red WiFi configurada.
+    - Sistema de reconexión automática en el loop.
+- **Servidor Web Básico:**
+    - Servidor HTTP integrado que permite ver el estado y la temperatura en tiempo real desde cualquier dispositivo en la red.
+    - Refresco automático de la página cada 5 segundos.
+- **Mejora en Info Sistema:**
+    - La pantalla de información ahora muestra la dirección IP local si está conectado, o "DESC." si no lo está.
+    - Reorganización visual de los datos de memoria y programas.
+- **Optimización de Gráfica en Tiempo Real:**
+    - Implementado escalado dinámico del eje Y según la temperatura máxima registrada (con margen del 10%).
+    - Añadidas etiquetas de escala de temperatura (0 a Max).
+    - Añadidas etiquetas de tiempo en el eje X ("-10m" y "Ahora") para mejor legibilidad.
+
+---
+
+## [V10.9] - 2026-03-26
 ### 🚀 Nuevas Funcionalidades y Personalización
 - **Personalización de Bienvenida:** Nueva Splash Screen con el texto `"Controlador by DAC LAB"` y animación de carga.
 - **Control de Brillo por Software:**
