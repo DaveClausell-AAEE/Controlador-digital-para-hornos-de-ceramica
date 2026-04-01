@@ -4,7 +4,20 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V11.0] - 2026-04-01 (Actual)
+## [V11.1] - 2026-04-01 (Actual)
+### 🔊 Feedback Sonoro y Ajustes de Usuario
+- **Sonidos de Interfaz:**
+    - Implementado un sonido de "click" (20ms) al navegar por los menús y pulsar botones.
+    - Mejora la experiencia táctil y confirma las acciones del usuario.
+- **Gestión de Sonido:**
+    - Nueva opción en el menú de **Ajustes > Sonido** para habilitar o deshabilitar los pitidos.
+    - El estado del sonido se guarda de forma persistente en LittleFS.
+- **Correcciones Técnicas:**
+    - Optimización del orden de declaración de variables globales.
+
+---
+
+## [V11.0] - 2026-04-01
 ### 🌐 Conectividad y Monitoreo Remoto
 - **Implementación de WiFi:**
     - Conexión automática a red WiFi configurada.
