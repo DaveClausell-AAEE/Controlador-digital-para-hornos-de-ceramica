@@ -9,6 +9,7 @@
 #include <PID_v1.h>
 #include <Adafruit_MAX31855.h>
 #include <LittleFS.h>
+using namespace fs;
 #include <WiFi.h>
 #include <WebServer.h>
 
