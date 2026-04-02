@@ -1,0 +1,17 @@
+Componente,Descripción,Referencia/Modelo,Cantidad,Notas
+Microcontrolador,ESP32 38-Pin Dev Module,ESP32-WROOM-32,1,Versión 38 pines (no 30)
+Pantalla TFT,Pantalla Color SPI 2.4",ILI9341 240x320,1,Sin Touch (más barata)
+Módulo Sensor,Conversor Termocupla SPI,MAX31855,1,Incluye bornera para tipo K
+Fuente de Poder,AC-DC 5V/3W,HLK-PM01,1,Montaje en PCB (aislado)
+Fusible,Portafusible + Fusible 1A,5x20mm Glass Fuse,1,Seguridad entrada 220V
+Varistor,Protección contra picos AC,10D471K,1,Conectar en paralelo a entrada AC
+Buzzer,Zumbador Activo 5V,Active Buzzer 5V,1,Sonido continuo al aplicar voltaje
+Relé Externo,Relé de Estado Sólido (SSR),SSR-25DA (25A),1,Montar fuera de la placa con disipador
+Termocupla,Sensor de Alta Temperatura,Tipo K (Blindada),1,Rango hasta 1250°C
+Borneras,Conector de tornillo 5.08mm,KF301-2P,3,"AC IN, SSR OUT, Termocupla"
+Pulsadores,Botón táctil PCB,6x6x5mm Tact Switch,4,Navegación del menú
+Tira de Pines (Zócalos),Conector Hembra 2.54mm,Female Header 1x19 (2 uds),1,Para pinchar el ESP32
+Tira de Pines (Módulos),Conector Hembra 2.54mm,Female Header 1x14,1,Para la pantalla TFT
+Capacitores,Filtrado de ruido botones,100nF Ceramic,4,Opcional pero recomendado
+Resistencias,Limitación corriente LED,220 Ohm 1/4W,1,Para el backlight de la pantalla
+PCB Custom,Placa de circuito impreso,FR4 2-Layer 10x10cm,1,Manda a fabricar en JLCPCB

@@ -1,0 +1,46 @@
+# ESQUEMA DE CONEXIÓN PCB - CONTROLADOR DE HORNO V12.2 (OPCIÓN B)
+Este documento sirve como "Netlist" para el diseño en KiCad/EasyEDA.
+
+## 1. Módulo de Potencia (Entrada AC)
+- AC-L (220V/110V) -> Fusible 1A -> Varistor 10D471K -> HLK-PM01 Pin AC-L
+- AC-N (220V/110V) -> Varistor 10D471K -> HLK-PM01 Pin AC-N
+- HLK-PM01 V+ (5V DC) -> Rail de 5V
+- HLK-PM01 V- (GND) -> Rail de GND
+
+## 2. Microcontrolador (ESP32 DevKit V1 - 38 Pin)
+- Pin 5V (VIN) -> Conectar a Rail 5V
+- Pin GND -> Conectar a Rail GND
+
+## 3. Bus SPI (Módulos Compartidos)
+- SCK (Reloj): ESP32 GPIO 18 -> TFT_SCK, MAX31855_CLK
+- MISO (Datos In): ESP32 GPIO 19 -> TFT_MISO, MAX31855_MISO
+- MOSI (Datos Out): ESP32 GPIO 23 -> TFT_MOSI
+
+## 4. Pantalla TFT ILI9341 (2.4" o 2.8")
+- VCC -> Rail 5V
+- GND -> Rail GND
+- CS -> ESP32 GPIO 15
+- DC / RS -> ESP32 GPIO 2
+- RST -> ESP32 GPIO 4
+- LED (BL) -> ESP32 GPIO 12 (Control de Brillo PWM)
+
+## 5. Sensor Temperatura (Módulo MAX31855)
+- VCC -> Rail 3.3V (Salida del ESP32 3V3)
+- GND -> Rail GND
+- CS -> ESP32 GPIO 5
+
+## 6. Salidas (Relé y Sonido)
+- Bornera SSR +: Rail 5V
+- Bornera SSR -: ESP32 GPIO 17 (Control Active LOW)
+- Buzzer +: Rail 5V
+- Buzzer -: ESP32 GPIO 27 (Zumbador Activo)
+
+## 7. Pulsadores (Control de Usuario)
+*Nota: Todos usan PULL-UP interno (conectar a GND)*
+- Botón UP: ESP32 GPIO 26 <-> GND
+- Botón DOWN: ESP32 GPIO 25 <-> GND
+- Botón OK: ESP32 GPIO 33 <-> GND
+- Botón EXIT: ESP32 GPIO 32 <-> GND
+
+---
+DAC LAB - Ingeniería de Hardware
