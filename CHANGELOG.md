@@ -4,7 +4,17 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V12.1] - 2026-04-01 (Actual)
+## [V12.2] - 2026-04-01 (Actual)
+### 🐛 Corrección de Interfaz de Inicio
+- **Fix Pantalla Standby:**
+    - Corregido error por el cual las etiquetas de "Temp. Actual" y "Programa Listo" no aparecían inmediatamente tras la pantalla de bienvenida.
+    - Se forzó el dibujado completo del layout al iniciar el sistema.
+- **Estabilidad Visual:**
+    - Mejorada la gestión de estados para garantizar refrescos completos en el primer ciclo.
+
+---
+
+## [V12.1] - 2026-04-01
 ### 🎨 UI Optimizada y Guía de Configuración
 - **Mejora en Modo AP:**
     - Ahora la pantalla TFT muestra instrucciones claras cuando el horno está en modo configuración.
