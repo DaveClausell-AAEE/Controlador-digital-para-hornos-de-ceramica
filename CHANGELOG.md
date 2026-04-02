@@ -4,7 +4,19 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V12.0] - 2026-04-01 (Actual)
+## [V12.1] - 2026-04-01 (Actual)
+### 🎨 UI Optimizada y Guía de Configuración
+- **Mejora en Modo AP:**
+    - Ahora la pantalla TFT muestra instrucciones claras cuando el horno está en modo configuración.
+    - Se indica la red WiFi (`HORNO-CONFIG`) y la dirección IP (`192.168.4.1`) directamente en el display.
+- **Ajuste de Gráfica:**
+    - La base de la gráfica se ha subido 10 píxeles para garantizar que las etiquetas de tiempo ("-10m" y "Ahora") sean completamente visibles.
+- **Estabilidad de WiFi:**
+    - Corregida lógica de reconexión en el loop principal.
+
+---
+
+## [V12.0] - 2026-04-01
 ### 📶 WiFi Manager y Configuración Dinámica
 - **Modo Punto de Acceso (AP):**
     - Si no hay WiFi configurado o falla la conexión, el horno crea su propia red `HORNO-CONFIG`.
