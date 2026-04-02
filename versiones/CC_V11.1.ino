@@ -547,8 +547,8 @@ void dibujarItemMenu(int i, bool s, const char* t, int y) {
     tft.print(sonidoHabilitado ? ": SI" : ": NO");
   }
 }
-void dibujarMenuPrincipal(bool r) { for (int i = 0; i < 3; i++) dibujarItemMenu(i, i == menuPrincipalCursor, menuPrincipalItems[i], 90); }
-void dibujarMenuAjustes(bool r) { for (int i = 0; i < 5; i++) dibujarItemMenu(i, i == menuAjustesCursor, menuAjustesItems[i], 90); }
+void dibujarMenuPrincipal(bool r) { for (int i = 0; i < 3; i++) dibujarItemMenu(i, i == menuPrincipalCursor, menuPrincipalItems[i], 40); }
+void dibujarMenuAjustes(bool r) { for (int i = 0; i < 5; i++) dibujarItemMenu(i, i == menuAjustesCursor, menuAjustesItems[i], 40); }
 void dibujarItemMenuSeleccion(int i, bool s) { int yp = 40 + (i * 35); tft.fillRect(0, yp, tft.width(), 30, s ? TFT_WHITE : TFT_BLACK); tft.setTextColor(s ? TFT_BLACK : (i < numProgramasGuardados ? TFT_WHITE : TFT_GREEN)); tft.setCursor(10, yp + 7); tft.println(i < numProgramasGuardados ? programas[i].nombre : "+ Crear Programa"); }
 void dibujarMenuSeleccionProg(bool r) { for (int i = 0; i <= numProgramasGuardados; i++) dibujarItemMenuSeleccion(i, i == menuSeleccionProgCursor); }
 void dibujarMenuConfigProg(bool r) { 
