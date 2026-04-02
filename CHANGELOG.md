@@ -4,7 +4,21 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V11.1] - 2026-04-01 (Actual)
+## [V12.0] - 2026-04-01 (Actual)
+### 📶 WiFi Manager y Configuración Dinámica
+- **Modo Punto de Acceso (AP):**
+    - Si no hay WiFi configurado o falla la conexión, el horno crea su propia red `HORNO-CONFIG`.
+    - Permite configurar el SSID y Password desde un portal cautivo en el móvil (`192.168.4.1`).
+- **Persistencia de Red:**
+    - Las credenciales se guardan de forma segura en `/wifi.bin` dentro de LittleFS.
+- **Opción de Reset WiFi:**
+    - Añadida función en **Ajustes > Reset WiFi** para borrar las credenciales y forzar el modo configuración.
+- **Interfaz Informativa:**
+    - La pantalla de Info WiFi ahora indica explícitamente cuando el dispositivo está en modo `CONFIG AP`.
+
+---
+
+## [V11.1] - 2026-04-01
 ### 🔊 Feedback Sonoro y Ajustes de Usuario
 - **Sonidos de Interfaz:**
     - Implementado un sonido de "click" (20ms) al navegar por los menús y pulsar botones.
