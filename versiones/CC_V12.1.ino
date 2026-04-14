@@ -193,6 +193,7 @@ void setup() {
   for(int i=0; i<GRAPH_POINTS; i++) tempHistory[i] = 0;
 
   tft.fillScreen(TFT_BLACK);
+  estadoPrevio = (EstadoHorno)-1; // Forzar que la primera actualizacion sea completa
   necesitaRefresco = true;
   actualizarPantalla();
 

@@ -1,7 +1,7 @@
 // =================================================================
-// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V12.0       ==
+// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V12.1       ==
 // =================================================================
-//      (WiFi Manager Light, Servidor Web, Sonidos de Menú)
+//      (WiFi Manager Light, UI Optimizada, Sonidos de Menú)
 //
 
 #include <SPI.h>
@@ -603,6 +603,16 @@ void actualizarTemperaturaEnBarra() {
   tft.setCursor(100, 7); tft.setTextColor(TFT_YELLOW); tft.print(getEstadoStr(estadoActual));
 }
 void dibujarPantallaStandBy(bool r) {
+  if (modoAP) {
+    if (r) {
+      tft.setTextColor(TFT_YELLOW); tft.setTextSize(2); tft.setCursor(20, 60); tft.print("MODO CONFIGURACION");
+      tft.setTextColor(TFT_WHITE); tft.setCursor(20, 100); tft.print("Conectese a WiFi:");
+      tft.setTextColor(TFT_CYAN); tft.setCursor(20, 130); tft.print(apSSID);
+      tft.setTextColor(TFT_WHITE); tft.setCursor(20, 170); tft.print("Y entre a la IP:");
+      tft.setTextColor(TFT_GREEN); tft.setCursor(20, 200); tft.print("192.168.4.1");
+    }
+    return;
+  }
   if (r) { tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(50, 60); tft.print("Temp. Actual:"); tft.setCursor(50, 150); tft.print("Programa Listo:"); tft.setTextColor(TFT_CYAN); tft.setCursor(60, 180); tft.println(programas[programaActivoIndex].nombre); }
   tft.fillRect(80, 90, 100, 40, TFT_BLACK); tft.setTextColor(TFT_YELLOW); tft.setTextSize(4); tft.setCursor(80, 90); tft.print(currentTemperature, 0); tft.print("c");
 }
@@ -745,6 +755,7 @@ void dibujarPantallaBienvenida() {
 void dibujarGrafica() {
   int x0 = 35, y0 = 220, w = 275, h = 80;
   tft.drawRect(x0, y0-h, w, h, TFT_DARKGREY);
+
   
   // Encontrar Máximo para escalado
   float maxT = 100.0;

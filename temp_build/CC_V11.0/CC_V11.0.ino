@@ -1,7 +1,7 @@
 // =================================================================
-// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V12.0       ==
+// ==      CONTROLADOR DIGITAL PARA HORNO DE CERÁMICA V11.0       ==
 // =================================================================
-//      (WiFi Manager Light, Servidor Web, Sonidos de Menú)
+//      (WiFi, Servidor Web y Status Bar info)
 //
 
 #include <SPI.h>
@@ -13,14 +13,12 @@ using namespace fs;
 #include <WiFi.h>
 #include <WebServer.h>
 
-// --- WiFi DYNAMICS ---
-struct WiFiConfig { char ssid[32]; char pass[64]; bool configurado; };
-WiFiConfig wConfig = {"", "", false};
+// --- WiFi CREDENTIALS ---
+const char* ssid = "TU_WIFI_SSID";
+const char* password = "TU_WIFI_PASSWORD";
 WebServer server(80);
 unsigned long lastWiFiCheck = 0;
 bool wifiConectado = false;
-bool modoAP = false;
-const char* apSSID = "HORNO-CONFIG";
 
 // --- PINOUT ---
 #define RELAY_PIN 17
@@ -33,22 +31,12 @@ const char* apSSID = "HORNO-CONFIG";
 
 // ...
 
-bool sonidoHabilitado = true;
-
 void suenaBuzzer(int duracion, int veces = 1) {
   for(int i=0; i<veces; i++) {
     digitalWrite(BUZZER_PIN, HIGH);
     delay(duracion);
     digitalWrite(BUZZER_PIN, LOW);
     if (i < veces - 1) delay(100);
-  }
-}
-
-void suenaClick() {
-  if (sonidoHabilitado) {
-    digitalWrite(BUZZER_PIN, HIGH);
-    delay(20); 
-    digitalWrite(BUZZER_PIN, LOW);
   }
 }
 #define MAXCS   5
@@ -113,7 +101,7 @@ bool parpadeoEstado = false;
 unsigned long ultimoParpadeo = 0;
 
 const char* menuPrincipalItems[] = {"Iniciar Programa", "Sel. Programa", "Ajustes"};
-const char* menuAjustesItems[] = {"Info Sistema", "Calibracion", "Ajustes PID", "Brillo", "Sonido", "Reset WiFi"};
+const char* menuAjustesItems[] = {"Info Sistema", "Calibracion", "Ajustes PID", "Brillo"};
 int brilloPantalla = 255;
 int menuPIDCursor = 0;
 
@@ -156,12 +144,7 @@ void dibujarMenuBrillo();
 void dibujarPantallaBienvenida();
 void dibujarGrafica();
 void iniciarWiFi();
-void iniciarModoAP();
 void manejarRaizWeb();
-void manejarConfigWiFi();
-void guardarWiFiConfig();
-void cargarWiFiConfig();
-void borrarWiFiConfig();
 void cargarProgramaDePrueba();
 void guardarConfiguracion();
 void cargarConfiguracion();
@@ -200,7 +183,6 @@ void setup() {
   
   iniciarWiFi();
   server.on("/", manejarRaizWeb);
-  server.on("/save", manejarConfigWiFi);
   server.begin();
 }
 
@@ -209,9 +191,9 @@ void loop() {
   
   if (millis() - lastWiFiCheck > 10000) {
     lastWiFiCheck = millis();
-    if (WiFi.status() != WL_CONNECTED && !modoAP) {
-      if (wifiConectado) { Serial.println("WiFi desconectado. Reconectando..."); wifiConectado = false; WiFi.begin(wConfig.ssid, wConfig.pass); }
-    } else if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() != WL_CONNECTED) {
+      if (wifiConectado) { Serial.println("WiFi desconectado. Reconectando..."); wifiConectado = false; WiFi.begin(ssid, password); }
+    } else {
       if (!wifiConectado) { Serial.print("WiFi Conectado! IP: "); Serial.println(WiFi.localIP()); wifiConectado = true; }
     }
   }
@@ -238,90 +220,29 @@ void loop() {
 void cargarProgramaDePrueba() { strcpy(programas[0].nombre, "CERAMICA 1"); programas[0].numEtapas = 2; programas[0].etapas[0] = {300, 400, 10}; programas[0].etapas[1] = {200, 600, 5}; numProgramasGuardados = 1; }
 
 void iniciarWiFi() {
-  cargarWiFiConfig();
-  if (wConfig.configurado) {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(wConfig.ssid, wConfig.pass);
-    Serial.print("Conectando a: "); Serial.println(wConfig.ssid);
-    unsigned long st = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - st < 15000) {
-      delay(500); Serial.print(".");
-    }
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("\nWiFi OK!"); Serial.println(WiFi.localIP());
-      wifiConectado = true; modoAP = false;
-      return;
-    }
-    Serial.println("\nFallo conexion. Iniciando AP...");
-  }
-  iniciarModoAP();
-}
-
-void iniciarModoAP() {
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(apSSID);
-  modoAP = true; wifiConectado = false;
-  Serial.println("Modo AP Activo: " + String(apSSID));
-  Serial.print("IP de Config: "); Serial.println(WiFi.softAPIP());
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando WiFi: "); Serial.println(ssid);
+  // No esperamos indefinidamente para no bloquear el inicio del horno.
+  // El loop se encargará de reintentar si no conecta.
 }
 
 void manejarRaizWeb() {
-  if (modoAP) {
-    String h = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1'><title>HORNO CONFIG</title></head>";
-    h += "<body><h1>Configuracion WiFi</h1><form action='/save' method='POST'>";
-    h += "Red: <input type='text' name='s'><br>Clave: <input type='password' name='p'><br>";
-    h += "<input type='submit' value='Conectar'></form></body></html>";
-    server.send(200, "text/html", h);
-  } else {
-    // Web de monitoreo normal
-    String html = "<!DOCTYPE html><html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1'>";
-    html += "<title>Controlador Horno by DAC LAB</title><style>";
-    html += "body { font-family: Arial; text-align: center; background-color: #111; color: white; }";
-    html += ".box { border: 2px solid cyan; padding: 20px; display: inline-block; border-radius: 10px; margin-top: 50px; }";
-    html += ".temp { font-size: 3em; color: yellow; }";
-    html += ".state { font-size: 1.5em; color: #00ff00; text-transform: uppercase; }";
-    html += "</style><meta http-equiv='refresh' content='5'></head><body>";
-    html += "<div class='box'><h1>DAC LAB - OVEN CONTROL</h1>";
-    html += "<div class='state'>" + String(getEstadoStr(estadoActual)) + "</div>";
-    html += "<div class='temp'>" + String(currentTemperature, 1) + " &deg;C</div>";
-    if (estadoActual == CALENTANDO || estadoActual == MANTENIENDO) {
-      html += "<p>Etapa: " + String(etapaActualIndex + 1) + " de " + String(programas[programaActivoIndex].numEtapas) + "</p>";
-      html += "<p>Setpoint: " + String(pidSetpoint, 1) + " &deg;C</p>";
-    }
-    html += "</div></body></html>";
-    server.send(200, "text/html", html);
+  String html = "<!DOCTYPE html><html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1'>";
+  html += "<title>Controlador Horno by DAC LAB</title><style>";
+  html += "body { font-family: Arial; text-align: center; background-color: #111; color: white; }";
+  html += ".box { border: 2px solid cyan; padding: 20px; display: inline-block; border-radius: 10px; margin-top: 50px; }";
+  html += ".temp { font-size: 3em; color: yellow; }";
+  html += ".state { font-size: 1.5em; color: #00ff00; text-transform: uppercase; }";
+  html += "</style><meta http-equiv='refresh' content='5'></head><body>";
+  html += "<div class='box'><h1>DAC LAB - OVEN CONTROL</h1>";
+  html += "<div class='state'>" + String(getEstadoStr(estadoActual)) + "</div>";
+  html += "<div class='temp'>" + String(currentTemperature, 1) + " &deg;C</div>";
+  if (estadoActual == CALENTANDO || estadoActual == MANTENIENDO) {
+    html += "<p>Etapa: " + String(etapaActualIndex + 1) + " de " + String(programas[programaActivoIndex].numEtapas) + "</p>";
+    html += "<p>Setpoint: " + String(pidSetpoint, 1) + " &deg;C</p>";
   }
-}
-
-void manejarConfigWiFi() {
-  if (server.hasArg("s") && server.hasArg("p")) {
-    strcpy(wConfig.ssid, server.arg("s").c_str());
-    strcpy(wConfig.pass, server.arg("p").c_str());
-    wConfig.configurado = true;
-    guardarWiFiConfig();
-    server.send(200, "text/html", "<h1>Datos Guardados. Reiniciando...</h1>");
-    delay(2000); ESP.restart();
-  } else {
-    server.send(400, "text/plain", "Faltan datos");
-  }
-}
-
-void guardarWiFiConfig() {
-  File f = LittleFS.open("/wifi.bin", "w");
-  if (f) { f.write((uint8_t*)&wConfig, sizeof(wConfig)); f.close(); }
-}
-
-void cargarWiFiConfig() {
-  if (LittleFS.exists("/wifi.bin")) {
-    File f = LittleFS.open("/wifi.bin", "r");
-    if (f) { f.read((uint8_t*)&wConfig, sizeof(wConfig)); f.close(); }
-  }
-}
-
-void borrarWiFiConfig() {
-  LittleFS.remove("/wifi.bin");
-  wConfig.configurado = false;
-  ESP.restart();
+  html += "</div></body></html>";
+  server.send(200, "text/html", html);
 }
 
 void guardarConfiguracion() {
@@ -334,7 +255,6 @@ void guardarConfiguracion() {
     f.write((uint8_t*)&Ki, sizeof(Ki));
     f.write((uint8_t*)&Kd, sizeof(Kd));
     f.write((uint8_t*)&brilloPantalla, sizeof(brilloPantalla));
-    f.write((uint8_t*)&sonidoHabilitado, sizeof(sonidoHabilitado));
     f.close();
   }
 }
@@ -354,9 +274,6 @@ void cargarConfiguracion() {
     }
     if (f.available() >= sizeof(int)) {
       f.read((uint8_t*)&brilloPantalla, sizeof(brilloPantalla));
-    }
-    if (f.available() >= sizeof(bool)) {
-      f.read((uint8_t*)&sonidoHabilitado, sizeof(sonidoHabilitado));
     }
     f.close();
   }
@@ -387,7 +304,6 @@ void manejarPulsadores() {
 }
 
 void procesarEntrada(bool subiendo, bool bajando, bool ok, bool exit) {
-    if (subiendo || bajando || ok || exit) suenaClick();
     estadoPrevio = estadoActual;
     switch (estadoActual) {
       case STAND_BY: if (ok) estadoActual = MENU_PRINCIPAL; break;
@@ -412,16 +328,14 @@ void procesarEntrada(bool subiendo, bool bajando, bool ok, bool exit) {
         if (exit) estadoActual = MENU_PRINCIPAL;
         break;
       case MENU_AJUSTES:
-        if (subiendo) menuAjustesCursor = (menuAjustesCursor - 1 + 6) % 6;
-        if (bajando) menuAjustesCursor = (menuAjustesCursor + 1) % 6;
+        if (subiendo) menuAjustesCursor = (menuAjustesCursor - 1 + 4) % 4;
+        if (bajando) menuAjustesCursor = (menuAjustesCursor + 1) % 4;
         if (exit) estadoActual = MENU_PRINCIPAL;
         if (ok) {
           if (menuAjustesCursor == 0) estadoActual = INFO_WIFI;
           if (menuAjustesCursor == 1) { valorCalibracionEditado = currentTemperature; estadoActual = MENU_CALIBRACION; }
           if (menuAjustesCursor == 2) { menuPIDCursor = 0; estadoActual = MENU_AJUSTES_PID; }
           if (menuAjustesCursor == 3) { estadoActual = MENU_AJUSTES_BRILLO; }
-          if (menuAjustesCursor == 4) { sonidoHabilitado = !sonidoHabilitado; guardarConfiguracion(); }
-          if (menuAjustesCursor == 5) { borrarWiFiConfig(); }
         }
         break;
       case MENU_AJUSTES_BRILLO:
@@ -606,19 +520,9 @@ void dibujarPantallaStandBy(bool r) {
   if (r) { tft.setTextColor(TFT_WHITE); tft.setTextSize(2); tft.setCursor(50, 60); tft.print("Temp. Actual:"); tft.setCursor(50, 150); tft.print("Programa Listo:"); tft.setTextColor(TFT_CYAN); tft.setCursor(60, 180); tft.println(programas[programaActivoIndex].nombre); }
   tft.fillRect(80, 90, 100, 40, TFT_BLACK); tft.setTextColor(TFT_YELLOW); tft.setTextSize(4); tft.setCursor(80, 90); tft.print(currentTemperature, 0); tft.print("c");
 }
-void dibujarItemMenu(int i, bool s, const char* t, int y) { 
-  int yp = y + (i * 35); 
-  tft.fillRect(0, yp, tft.width(), 30, s ? TFT_WHITE : TFT_BLACK); 
-  tft.setTextColor(s ? TFT_BLACK : TFT_WHITE); tft.setTextSize(2); 
-  tft.setCursor(10, yp + 7); 
-  tft.print(t);
-  if (strcmp(t, "Sonido") == 0) {
-    tft.setCursor(200, yp + 7);
-    tft.print(sonidoHabilitado ? ": SI" : ": NO");
-  }
-}
-void dibujarMenuPrincipal(bool r) { for (int i = 0; i < 3; i++) dibujarItemMenu(i, i == menuPrincipalCursor, menuPrincipalItems[i], 40); }
-void dibujarMenuAjustes(bool r) { for (int i = 0; i < 6; i++) dibujarItemMenu(i, i == menuAjustesCursor, menuAjustesItems[i], 40); }
+void dibujarItemMenu(int i, bool s, const char* t, int y) { int yp = y + (i * 35); tft.fillRect(0, yp, tft.width(), 30, s ? TFT_WHITE : TFT_BLACK); tft.setTextColor(s ? TFT_BLACK : TFT_WHITE); tft.setTextSize(2); tft.setCursor(10, yp + 7); tft.println(t); }
+void dibujarMenuPrincipal(bool r) { for (int i = 0; i < 3; i++) dibujarItemMenu(i, i == menuPrincipalCursor, menuPrincipalItems[i], 90); }
+void dibujarMenuAjustes(bool r) { for (int i = 0; i < 4; i++) dibujarItemMenu(i, i == menuAjustesCursor, menuAjustesItems[i], 90); }
 void dibujarItemMenuSeleccion(int i, bool s) { int yp = 40 + (i * 35); tft.fillRect(0, yp, tft.width(), 30, s ? TFT_WHITE : TFT_BLACK); tft.setTextColor(s ? TFT_BLACK : (i < numProgramasGuardados ? TFT_WHITE : TFT_GREEN)); tft.setCursor(10, yp + 7); tft.println(i < numProgramasGuardados ? programas[i].nombre : "+ Crear Programa"); }
 void dibujarMenuSeleccionProg(bool r) { for (int i = 0; i <= numProgramasGuardados; i++) dibujarItemMenuSeleccion(i, i == menuSeleccionProgCursor); }
 void dibujarMenuConfigProg(bool r) { 
@@ -662,8 +566,6 @@ void dibujarPantallaInfoWiFi() {
   tft.setCursor(20, 75); tft.print("IP: "); 
   if (WiFi.status() == WL_CONNECTED) {
     tft.setTextColor(TFT_GREEN); tft.print(WiFi.localIP());
-  } else if (modoAP) {
-    tft.setTextColor(TFT_YELLOW); tft.print("CONFIG AP");
   } else {
     tft.setTextColor(TFT_RED); tft.print("DESC.");
   }
@@ -743,7 +645,7 @@ void dibujarPantallaBienvenida() {
   delay(500);
 }
 void dibujarGrafica() {
-  int x0 = 35, y0 = 220, w = 275, h = 80;
+  int x0 = 35, y0 = 230, w = 275, h = 80;
   tft.drawRect(x0, y0-h, w, h, TFT_DARKGREY);
   
   // Encontrar Máximo para escalado

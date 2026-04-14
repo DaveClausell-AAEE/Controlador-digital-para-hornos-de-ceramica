@@ -10,49 +10,66 @@ Este proyecto consiste en un sistema de control de temperatura de alta precisió
 - **Interfaz Visual:** Pantalla TFT ILI9341 (320x240 px) con controlador SPI.
 - **Entradas de Usuario:** 4 Pulsadores (UP, DOWN, OK, EXIT).
 
-## 3. Pinout Detallado (Conexiones)
+## 3. Pinout Detallado (Arquitectura Industrial V13.0)
 
 ```text
-       ESP32 (38-pin Dev Module)
-      +------------------------+
-      |        ...             |
-(D12) | TFT_LED    GPIO 17 (R) | (Relay)
-(D14) | [NC]       GPIO 27 (B) | (Buzzer)
-(D26) | BTN_UP     GPIO 25 (D) | (BTN_DOWN)
-(D33) | BTN_OK     GPIO 32 (E) | (BTN_EXIT)
-      |                        |
-      |   SPI (MAX31855/TFT)   |
-(D18) | SCK  MISO 19  MOSI 23  |
-(D5 ) | CS1  CS2  15           |
-      +------------------------+
+       ESP32 (38-pin Dev Module) - Conexión Directa a TFT
+      +-------------------------------------------+
+      | [GND] [5V] [3.3V] ...                     |
+(D12) | TFT_LED (PWM)      GPIO 17 [EXT] -> RELAY |
+(D14) | SENSOR_CLK (HSPI)  GPIO 27 [EXT] -> BUZZER|
+(D13) | SENSOR_MISO(HSPI)  GPIO 25 [IN]  <- BTN_DN|
+(D5 ) | SENSOR_CS  (HSPI)  GPIO 26 [IN]  <- BTN_UP|
+      |                    GPIO 33 [IN]  <- BTN_OK|
+(D16) | LED_RED            GPIO 32 [IN]  <- BTN_EX|
+(D21) | LED_GREEN                                 |
+(D22) | LED_BLUE           SPI (VSPI para TFT)    |
+      |                    SCK: 18, MISO: 19 (NC) |
+(D2 ) | TFT_DC             MOSI: 23, CS: 15       |
+(D4 ) | TFT_RST                                   |
+      +-------------------------------------------+
 
-Conexiones:
-- Relé (Resistencia): GPIO 17
-- Buzzer (Alarma):    GPIO 27
-- TFT Backlight (BL): GPIO 12
-- Pulsadores (PULLUP):
-  UP: 26, DOWN: 25, OK: 33, EXIT: 32
+Nota: La placa se monta en la parte posterior de la pantalla.
 ```
 
-| Componente | Pin ESP32 | Función | Tipo de Señal |
-|------------|-----------|---------|---------------|
-| **Relé** | GPIO 17 | Control de Resistencia | Digital (Salida) |
-| **Buzzer** | GPIO 27 | Alarma Sonora | Digital (Salida) |
-| **Botón UP** | GPIO 26 | Navegación / Incremento | Digital (Entrada) |
-| **Botón DOWN** | GPIO 25 | Navegación / Decremento | Digital (Entrada) |
-| **Botón OK** | GPIO 33 | Confirmar / Editar | Digital (Entrada) |
-| **Botón EXIT** | GPIO 32 | Volver / Cancelar | Digital (Entrada) |
-| TFT LED | GPIO 12 | Retroiluminacion | PWM (0-255) |
+| Componente | Pin ESP32 | Función | Bus / Tipo |
+|------------|-----------|---------|------------|
+| **Relé (Externo)** | GPIO 17 | Control de Resistencia | Digital |
+| **Buzzer (Ext)** | GPIO 27 | Alarma Sonora | Digital |
+| **LED RGB (R)** | GPIO 16 | Estado (Rojo) | Digital |
+| **LED RGB (G)** | GPIO 21 | Estado (Verde) | Digital |
+| **LED RGB (B)** | GPIO 22 | Estado (Azul) | Digital |
+| **Botón UP** | GPIO 26 | Navegación | Digital (PULLUP) |
+| **Botón DOWN** | GPIO 25 | Navegación | Digital (PULLUP) |
+| **Botón OK** | GPIO 33 | Confirmar | Digital (PULLUP) |
+| **Botón EXIT** | GPIO 32 | Volver | Digital (PULLUP) |
+| **TFT LED** | GPIO 12 | Brillo Pantalla | PWM |
+| **TFT CS** | GPIO 15 | Selección TFT | **VSPI** |
+| **TFT DC** | GPIO 2 | Datos/Comando | **VSPI** |
+| **TFT RST** | GPIO 4 | Reset Pantalla | **VSPI** |
+| **MAX31855 CLK**| GPIO 14 | Reloj Sensor | **HSPI** |
+| **MAX31855 MISO**| GPIO 13 | Datos Sensor | **HSPI** |
+| **MAX31855 CS** | GPIO 5 | Selección Sensor | **HSPI** |
 
-| **MAX31855 CLK**| GPIO 18 | Reloj SPI (Shared) | Digital (Salida) |
-| **MAX31855 MISO**| GPIO 19 | Datos del Sensor | Digital (Entrada) |
-| **MAX31855 CS** | GPIO 5 | Selección de Chip | Digital (Salida) |
-| **TFT SCK** | GPIO 18 | Reloj SPI (Shared) | Digital (Salida) |
-| **TFT MISO** | GPIO 19 | Datos TFT (Shared) | Digital (Entrada) |
-| **TFT MOSI** | GPIO 23 | Datos TFT (Salida) | Digital (Salida) |
-| **TFT CS** | GPIO 15 | Selección de Chip TFT | Digital (Salida) |
-| **TFT DC/RS** | GPIO 2 | Datos/Comando TFT | Digital (Salida) |
-| **TFT RST** | GPIO 4 | Reset Pantalla | Digital (Salida) |
+## 4. Recomendaciones de Ingeniería Industrial (V13.0)
+### 4.1 Integridad de Señal y Ruido
+- **Separación de Buses SPI:** Se utiliza HSPI para el sensor de temperatura y VSPI para la pantalla TFT. Esto evita interferencias electromagnéticas (EMI) y cuellos de botella en el bus compartidos que podrían corromper las lecturas críticas del MAX31855.
+- **Filtrado de Alimentación:** Implementar un filtro pasa-banda en la entrada de 3.3V del ESP32 con un capacitor electrolítico de 10uF (baja frecuencia) y uno cerámico de 100nF (alta frecuencia) lo más cerca posible de los pines de alimentación.
+- **Aislamiento de Pines:** Todos los pines GPIO no utilizados deben configurarse explícitamente como `INPUT_PULLUP` o `OUTPUT` en estado bajo para evitar que actúen como antenas de ruido.
+
+### 4.2 Diseño Físico y Modularidad
+- **Modularidad de Potencia:** La fuente de alimentación y el relé deben ubicarse en un módulo externo separado. La placa de control solo recibe alimentación DC limpia y envía señales de control de bajo nivel.
+- **Factor de Forma:** Placa compacta diseñada para encajar directamente en los pines traseros de una pantalla ILI9341, optimizando el espacio y reduciendo el cableado.
+
+### 4.3 Interfaz de Usuario Remota (LED de Estado)
+- **AZUL:** Conectado a WiFi, en espera (Stand-by).
+- **NARANJA/AMARILLO:** Horneado en curso (Calentando).
+- **VERDE:** Ciclo terminado / Manteniendo.
+- **ROJO:** Error crítico / Fallo de sensor.
+- **CIAN PARPADEANTE:** Modo Configuración (Punto de Acceso).
+
+### 4.4 Funciones de Recuperación
+- **Hard Reset:** Presionar simultáneamente **OK + EXIT** durante 3 segundos provocará un reinicio de software (`ESP.restart()`).
 
 ## 4. Funcionalidades Principales
 ### 4.1 Gestión de Programas

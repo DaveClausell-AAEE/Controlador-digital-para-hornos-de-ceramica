@@ -13,12 +13,14 @@ using namespace fs;
 #include <WiFi.h>
 #include <WebServer.h>
 
-// --- WiFi CREDENTIALS ---
-const char* ssid = "TU_WIFI_SSID";
-const char* password = "TU_WIFI_PASSWORD";
+// --- WiFi DYNAMICS ---
+struct WiFiConfig { char ssid[32]; char pass[64]; bool configurado; };
+WiFiConfig wConfig = {"", "", false};
 WebServer server(80);
 unsigned long lastWiFiCheck = 0;
 bool wifiConectado = false;
+bool modoAP = false;
+const char* apSSID = "HORNO-CONFIG";
 
 // --- PINOUT ---
 #define RELAY_PIN 17
@@ -111,7 +113,7 @@ bool parpadeoEstado = false;
 unsigned long ultimoParpadeo = 0;
 
 const char* menuPrincipalItems[] = {"Iniciar Programa", "Sel. Programa", "Ajustes"};
-const char* menuAjustesItems[] = {"Info Sistema", "Calibracion", "Ajustes PID", "Brillo", "Sonido"};
+const char* menuAjustesItems[] = {"Info Sistema", "Calibracion", "Ajustes PID", "Brillo", "Sonido", "Reset WiFi"};
 int brilloPantalla = 255;
 int menuPIDCursor = 0;
 
@@ -154,7 +156,12 @@ void dibujarMenuBrillo();
 void dibujarPantallaBienvenida();
 void dibujarGrafica();
 void iniciarWiFi();
+void iniciarModoAP();
 void manejarRaizWeb();
+void manejarConfigWiFi();
+void guardarWiFiConfig();
+void cargarWiFiConfig();
+void borrarWiFiConfig();
 void cargarProgramaDePrueba();
 void guardarConfiguracion();
 void cargarConfiguracion();
@@ -193,6 +200,7 @@ void setup() {
   
   iniciarWiFi();
   server.on("/", manejarRaizWeb);
+  server.on("/save", manejarConfigWiFi);
   server.begin();
 }
 
@@ -230,29 +238,90 @@ void loop() {
 void cargarProgramaDePrueba() { strcpy(programas[0].nombre, "CERAMICA 1"); programas[0].numEtapas = 2; programas[0].etapas[0] = {300, 400, 10}; programas[0].etapas[1] = {200, 600, 5}; numProgramasGuardados = 1; }
 
 void iniciarWiFi() {
-  WiFi.begin(ssid, password);
-  Serial.print("Conectando WiFi: "); Serial.println(ssid);
-  // No esperamos indefinidamente para no bloquear el inicio del horno.
-  // El loop se encargará de reintentar si no conecta.
+  cargarWiFiConfig();
+  if (wConfig.configurado) {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(wConfig.ssid, wConfig.pass);
+    Serial.print("Conectando a: "); Serial.println(wConfig.ssid);
+    unsigned long st = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - st < 15000) {
+      delay(500); Serial.print(".");
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("\nWiFi OK!"); Serial.println(WiFi.localIP());
+      wifiConectado = true; modoAP = false;
+      return;
+    }
+    Serial.println("\nFallo conexion. Iniciando AP...");
+  }
+  iniciarModoAP();
+}
+
+void iniciarModoAP() {
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(apSSID);
+  modoAP = true; wifiConectado = false;
+  Serial.println("Modo AP Activo: " + String(apSSID));
+  Serial.print("IP de Config: "); Serial.println(WiFi.softAPIP());
 }
 
 void manejarRaizWeb() {
-  String html = "<!DOCTYPE html><html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1'>";
-  html += "<title>Controlador Horno by DAC LAB</title><style>";
-  html += "body { font-family: Arial; text-align: center; background-color: #111; color: white; }";
-  html += ".box { border: 2px solid cyan; padding: 20px; display: inline-block; border-radius: 10px; margin-top: 50px; }";
-  html += ".temp { font-size: 3em; color: yellow; }";
-  html += ".state { font-size: 1.5em; color: #00ff00; text-transform: uppercase; }";
-  html += "</style><meta http-equiv='refresh' content='5'></head><body>";
-  html += "<div class='box'><h1>DAC LAB - OVEN CONTROL</h1>";
-  html += "<div class='state'>" + String(getEstadoStr(estadoActual)) + "</div>";
-  html += "<div class='temp'>" + String(currentTemperature, 1) + " &deg;C</div>";
-  if (estadoActual == CALENTANDO || estadoActual == MANTENIENDO) {
-    html += "<p>Etapa: " + String(etapaActualIndex + 1) + " de " + String(programas[programaActivoIndex].numEtapas) + "</p>";
-    html += "<p>Setpoint: " + String(pidSetpoint, 1) + " &deg;C</p>";
+  if (modoAP) {
+    String h = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1'><title>HORNO CONFIG</title></head>";
+    h += "<body><h1>Configuracion WiFi</h1><form action='/save' method='POST'>";
+    h += "Red: <input type='text' name='s'><br>Clave: <input type='password' name='p'><br>";
+    h += "<input type='submit' value='Conectar'></form></body></html>";
+    server.send(200, "text/html", h);
+  } else {
+    // Web de monitoreo normal
+    String html = "<!DOCTYPE html><html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1'>";
+    html += "<title>Controlador Horno by DAC LAB</title><style>";
+    html += "body { font-family: Arial; text-align: center; background-color: #111; color: white; }";
+    html += ".box { border: 2px solid cyan; padding: 20px; display: inline-block; border-radius: 10px; margin-top: 50px; }";
+    html += ".temp { font-size: 3em; color: yellow; }";
+    html += ".state { font-size: 1.5em; color: #00ff00; text-transform: uppercase; }";
+    html += "</style><meta http-equiv='refresh' content='5'></head><body>";
+    html += "<div class='box'><h1>DAC LAB - OVEN CONTROL</h1>";
+    html += "<div class='state'>" + String(getEstadoStr(estadoActual)) + "</div>";
+    html += "<div class='temp'>" + String(currentTemperature, 1) + " &deg;C</div>";
+    if (estadoActual == CALENTANDO || estadoActual == MANTENIENDO) {
+      html += "<p>Etapa: " + String(etapaActualIndex + 1) + " de " + String(programas[programaActivoIndex].numEtapas) + "</p>";
+      html += "<p>Setpoint: " + String(pidSetpoint, 1) + " &deg;C</p>";
+    }
+    html += "</div></body></html>";
+    server.send(200, "text/html", html);
   }
-  html += "</div></body></html>";
-  server.send(200, "text/html", html);
+}
+
+void manejarConfigWiFi() {
+  if (server.hasArg("s") && server.hasArg("p")) {
+    strcpy(wConfig.ssid, server.arg("s").c_str());
+    strcpy(wConfig.pass, server.arg("p").c_str());
+    wConfig.configurado = true;
+    guardarWiFiConfig();
+    server.send(200, "text/html", "<h1>Datos Guardados. Reiniciando...</h1>");
+    delay(2000); ESP.restart();
+  } else {
+    server.send(400, "text/plain", "Faltan datos");
+  }
+}
+
+void guardarWiFiConfig() {
+  File f = LittleFS.open("/wifi.bin", "w");
+  if (f) { f.write((uint8_t*)&wConfig, sizeof(wConfig)); f.close(); }
+}
+
+void cargarWiFiConfig() {
+  if (LittleFS.exists("/wifi.bin")) {
+    File f = LittleFS.open("/wifi.bin", "r");
+    if (f) { f.read((uint8_t*)&wConfig, sizeof(wConfig)); f.close(); }
+  }
+}
+
+void borrarWiFiConfig() {
+  LittleFS.remove("/wifi.bin");
+  wConfig.configurado = false;
+  ESP.restart();
 }
 
 void guardarConfiguracion() {
@@ -343,8 +412,8 @@ void procesarEntrada(bool subiendo, bool bajando, bool ok, bool exit) {
         if (exit) estadoActual = MENU_PRINCIPAL;
         break;
       case MENU_AJUSTES:
-        if (subiendo) menuAjustesCursor = (menuAjustesCursor - 1 + 5) % 5;
-        if (bajando) menuAjustesCursor = (menuAjustesCursor + 1) % 5;
+        if (subiendo) menuAjustesCursor = (menuAjustesCursor - 1 + 6) % 6;
+        if (bajando) menuAjustesCursor = (menuAjustesCursor + 1) % 6;
         if (exit) estadoActual = MENU_PRINCIPAL;
         if (ok) {
           if (menuAjustesCursor == 0) estadoActual = INFO_WIFI;
@@ -352,6 +421,7 @@ void procesarEntrada(bool subiendo, bool bajando, bool ok, bool exit) {
           if (menuAjustesCursor == 2) { menuPIDCursor = 0; estadoActual = MENU_AJUSTES_PID; }
           if (menuAjustesCursor == 3) { estadoActual = MENU_AJUSTES_BRILLO; }
           if (menuAjustesCursor == 4) { sonidoHabilitado = !sonidoHabilitado; guardarConfiguracion(); }
+          if (menuAjustesCursor == 5) { borrarWiFiConfig(); }
         }
         break;
       case MENU_AJUSTES_BRILLO:

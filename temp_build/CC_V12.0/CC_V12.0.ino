@@ -743,7 +743,7 @@ void dibujarPantallaBienvenida() {
   delay(500);
 }
 void dibujarGrafica() {
-  int x0 = 35, y0 = 220, w = 275, h = 80;
+  int x0 = 35, y0 = 230, w = 275, h = 80;
   tft.drawRect(x0, y0-h, w, h, TFT_DARKGREY);
   
   // Encontrar Máximo para escalado

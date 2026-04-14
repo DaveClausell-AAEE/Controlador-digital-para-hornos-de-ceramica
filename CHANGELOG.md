@@ -4,7 +4,25 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V12.2] - 2026-04-01 (Actual)
+## [V13.0] - 2026-04-14 (Actual)
+### 🏗️ Arquitectura de Grado Industrial
+- **Dual SPI Bus:**
+    - Implementada separación física de buses: **HSPI** exclusivo para el sensor MAX31855 y **VSPI** para la pantalla TFT.
+    - Reduce drásticamente el ruido electromagnético en las lecturas de temperatura.
+- **Feedback Visual de Estado (LED RGB):**
+    - Añadida lógica para LED RGB en GPIOs 16, 21 y 22.
+    - Colores: **Azul** (Online), **Amarillo** (Horneando), **Verde** (Listo/Mantenimiento), **Rojo** (Fallo), **Cian parpadeante** (Modo AP).
+- **Hard Reset por Software:**
+    - Nueva función de reinicio de emergencia: Presionando **OK + EXIT por 3 segundos** se fuerza un `ESP.restart()`.
+- **Integridad y Seguridad:**
+    - Configuración de pines no usados en modo `INPUT_PULLUP` para evitar ruido tipo "antena".
+    - Recomendaciones de filtrado (10uF + 100nF) añadidas a la documentación.
+- **Diseño Modular:**
+    - El código ahora asume relé y fuente externos para mayor limpieza eléctrica.
+
+---
+
+## [V12.2] - 2026-04-01
 ### 🐛 Corrección de Interfaz de Inicio
 - **Fix Pantalla Standby:**
     - Corregido error por el cual las etiquetas de "Temp. Actual" y "Programa Listo" no aparecían inmediatamente tras la pantalla de bienvenida.
