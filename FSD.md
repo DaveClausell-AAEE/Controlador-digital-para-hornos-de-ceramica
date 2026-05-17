@@ -10,7 +10,7 @@ Este proyecto consiste en un sistema de control de temperatura de alta precisió
 - **Interfaz Visual:** Pantalla TFT ILI9341 (320x240 px) con controlador SPI.
 - **Entradas de Usuario:** 4 Pulsadores (UP, DOWN, OK, EXIT).
 
-## 3. Pinout Detallado (Arquitectura Industrial V13.0)
+## 3. Pinout Detallado (Arquitectura Industrial V13.0 + Personality Module)
 
 ```text
        ESP32 (38-pin Dev Module) - Conexión Directa a TFT
@@ -18,35 +18,34 @@ Este proyecto consiste en un sistema de control de temperatura de alta precisió
       | [GND] [5V] [3.3V] ...                     |
 (D12) | TFT_LED (PWM)      GPIO 17 [EXT] -> RELAY |
 (D14) | SENSOR_CLK (HSPI)  GPIO 27 [EXT] -> BUZZER|
-(D13) | SENSOR_MISO(HSPI)  GPIO 25 [IN]  <- BTN_DN|
-(D5 ) | SENSOR_CS  (HSPI)  GPIO 26 [IN]  <- BTN_UP|
-      |                    GPIO 33 [IN]  <- BTN_OK|
-(D16) | LED_RED            GPIO 32 [IN]  <- BTN_EX|
-(D21) | LED_GREEN                                 |
-(D22) | LED_BLUE           SPI (VSPI para TFT)    |
-      |                    SCK: 18, MISO: 19 (NC) |
+(D13) | SENSOR_MISO(HSPI)  GPIO 33 [OUT] -> SD_CS |
+(D5 ) | SENSOR_CS  (HSPI)  GPIO 34 [IN]  <- BTN_OK|
+      |                    GPIO 35 [IN]  <- BTN_EX|
+(D16) | LED_RED            GPIO 36 [IN]  <- BTN_UP|
+(D21) | LED_GREEN          GPIO 39 [IN]  <- BTN_DN|
+(D22) | LED_BLUE           SPI (VSPI para TFT/SD) |
+      |                    SCK: 18, MISO: 19      |
 (D2 ) | TFT_DC             MOSI: 23, CS: 15       |
 (D4 ) | TFT_RST                                   |
       +-------------------------------------------+
 
-Nota: La placa se monta en la parte posterior de la pantalla.
+Nota: Los botones (34-39) requieren Pull-up externo a 3.3V.
 ```
 
 | Componente | Pin ESP32 | Función | Bus / Tipo |
 |------------|-----------|---------|------------|
-| **Relé (Externo)** | GPIO 17 | Control de Resistencia | Digital |
+| **Relé (Externo)** | GPIO 17 | Control de Resistencia | Digital (Active LOW) |
 | **Buzzer (Ext)** | GPIO 27 | Alarma Sonora | Digital |
 | **LED RGB (R)** | GPIO 16 | Estado (Rojo) | Digital |
 | **LED RGB (G)** | GPIO 21 | Estado (Verde) | Digital |
 | **LED RGB (B)** | GPIO 22 | Estado (Azul) | Digital |
-| **Botón UP** | GPIO 26 | Navegación | Digital (PULLUP) |
-| **Botón DOWN** | GPIO 25 | Navegación | Digital (PULLUP) |
-| **Botón OK** | GPIO 33 | Confirmar | Digital (PULLUP) |
-| **Botón EXIT** | GPIO 32 | Volver | Digital (PULLUP) |
+| **Botón UP** | GPIO 36 | Navegación | Input Only (Ext Pull-up) |
+| **Botón DOWN** | GPIO 39 | Navegación | Input Only (Ext Pull-up) |
+| **Botón OK** | GPIO 34 | Confirmar | Input Only (Ext Pull-up) |
+| **Botón EXIT** | GPIO 35 | Volver | Input Only (Ext Pull-up) |
 | **TFT LED** | GPIO 12 | Brillo Pantalla | PWM |
 | **TFT CS** | GPIO 15 | Selección TFT | **VSPI** |
-| **TFT DC** | GPIO 2 | Datos/Comando | **VSPI** |
-| **TFT RST** | GPIO 4 | Reset Pantalla | **VSPI** |
+| **SD CS** | GPIO 33 | Selección SD | **VSPI** |
 | **MAX31855 CLK**| GPIO 14 | Reloj Sensor | **HSPI** |
 | **MAX31855 MISO**| GPIO 13 | Datos Sensor | **HSPI** |
 | **MAX31855 CS** | GPIO 5 | Selección Sensor | **HSPI** |
@@ -123,6 +122,12 @@ Nota: La placa se monta en la parte posterior de la pantalla.
 - Gráfica de temperatura en tiempo real con escalado dinámico y etiquetas de tiempo.
 - **Auto-recovery:** Guardado de estado dinámico en LittleFS.
 - **Alarmas Sonoras:** Integración completa de buzzer con sonidos diferenciados.
+- **Conectividad WiFi:** Servidor web integrado para monitoreo remoto y pantalla de info sistema con IP.
+
+### 7.2 Próximos Pasos 🚀
+1. **Seguridad Avanzada:** Implementar un sistema de notificaciones por email/telegram en caso de fallo.
+2. **Histórico de Horneados:** Guardar un log de los últimos horneados en LittleFS para descargar vía web.
+onidos diferenciados.
 - **Conectividad WiFi:** Servidor web integrado para monitoreo remoto y pantalla de info sistema con IP.
 
 ### 7.2 Próximos Pasos 🚀
