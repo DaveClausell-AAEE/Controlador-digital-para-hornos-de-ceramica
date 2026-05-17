@@ -695,7 +695,22 @@ void cargarConfiguracion() {
   }
 }
 
-void cargarProgramaDePrueba() { strcpy(programas[0].nombre, "BIZCOCHO"); programas[0].numEtapas = 1; programas[0].etapas[0] = {150, 600, 30}; numProgramasGuardados = 1; }
+void cargarProgramaDePrueba() { 
+  // Programa 1: CERAMICA1
+  strcpy(programas[0].nombre, "CERAMICA1"); 
+  programas[0].numEtapas = 4; 
+  programas[0].etapas[0] = {180, 400, 15};  // Rampa 3C/min (180C/h), T: 400C, Mant: 15min
+  programas[0].etapas[1] = {180, 700, 10};  // Rampa 3C/min (180C/h), T: 700C, Mant: 10min
+  programas[0].etapas[2] = {180, 940, 10};  // Rampa 3C/min (180C/h), T: 940C, Mant: 10min
+  programas[0].etapas[3] = {180, 1040, 20}; // Rampa 3C/min (180C/h), T: 1040C, Mant: 20min
+
+  // Programa 2: SECADO
+  strcpy(programas[1].nombre, "SECADO"); 
+  programas[1].numEtapas = 1; 
+  programas[1].etapas[0] = {180, 200, 120}; // Rampa 3C/min (180C/h), T: 200C, Mant: 120min (2h)
+
+  numProgramasGuardados = 2; 
+}
 
 // --- WiFi ---
 void iniciarWiFi() {
