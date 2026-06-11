@@ -25,10 +25,10 @@ SPIClass hspi(HSPI);
 #define LED_R_PIN     16
 #define LED_G_PIN     21
 #define LED_B_PIN     22
-#define BTN_UP_PIN    36 // SVP (Req. Pull-up externo)
-#define BTN_DOWN_PIN  39 // SVN (Req. Pull-up externo)
-#define BTN_OK_PIN    34 // (Req. Pull-up externo)
-#define BTN_EXIT_PIN  35 // (Req. Pull-up externo)
+#define BTN_UP_PIN    36 // SVP
+#define BTN_DOWN_PIN  39 // SVN
+#define BTN_OK_PIN    34
+#define BTN_EXIT_PIN  35
 #define SD_CS         33 
 #define TFT_LED       12 
 #define MAXCS         5
