@@ -63,8 +63,8 @@ void loop() {
   bool e = digitalRead(NEW_BTN_EXIT) == LOW;
 
   // Visualización en Pantalla
-  drawButtonState("UP (36):", u, 100);
-  drawButtonState("DN (39):", d, 120);
+  drawButtonState("UP (SVP):", u, 100);
+  drawButtonState("DN (SVN):", d, 120);
   drawButtonState("OK (34):", o, 140);
   drawButtonState("EX (35):", e, 160);
 
@@ -82,4 +82,6 @@ void drawButtonState(const char* label, bool pressed, int y) {
     tft.print(" LIBERADO    ");
   }
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
+}
+T_BLACK);
 }

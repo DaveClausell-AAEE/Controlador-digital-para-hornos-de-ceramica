@@ -21,8 +21,8 @@ Este proyecto consiste en un sistema de control de temperatura de alta precisió
 (D13) | SENSOR_MISO(HSPI)  GPIO 33 [OUT] -> SD_CS |
 (D5 ) | SENSOR_CS  (HSPI)  GPIO 34 [IN]  <- BTN_OK|
       |                    GPIO 35 [IN]  <- BTN_EX|
-(D16) | LED_RED            GPIO 36 [IN]  <- BTN_UP|
-(D21) | LED_GREEN          GPIO 39 [IN]  <- BTN_DN|
+(D16) | LED_RED            GPIO 36 (SVP) [IN]  <- BTN_UP|
+(D21) | LED_GREEN          GPIO 39 (SVN) [IN]  <- BTN_DN|
 (D22) | LED_BLUE           SPI (VSPI para TFT/SD) |
       |                    SCK: 18, MISO: 19      |
 (D2 ) | TFT_DC             MOSI: 23, CS: 15       |
@@ -39,8 +39,8 @@ Nota: Los botones (34-39) requieren Pull-up externo a 3.3V.
 | **LED RGB (R)** | GPIO 16 | Estado (Rojo) | Digital |
 | **LED RGB (G)** | GPIO 21 | Estado (Verde) | Digital |
 | **LED RGB (B)** | GPIO 22 | Estado (Azul) | Digital |
-| **Botón UP** | GPIO 36 | Navegación | Input Only (Ext Pull-up) |
-| **Botón DOWN** | GPIO 39 | Navegación | Input Only (Ext Pull-up) |
+| **Botón UP** | GPIO 36 (SVP) | Navegación | Input Only (Ext Pull-up) |
+| **Botón DOWN** | GPIO 39 (SVN) | Navegación | Input Only (Ext Pull-up) |
 | **Botón OK** | GPIO 34 | Confirmar | Input Only (Ext Pull-up) |
 | **Botón EXIT** | GPIO 35 | Volver | Input Only (Ext Pull-up) |
 | **TFT LED** | GPIO 12 | Brillo Pantalla | PWM |
@@ -133,3 +133,4 @@ onidos diferenciados.
 ### 7.2 Próximos Pasos 🚀
 1. **Seguridad Avanzada:** Implementar un sistema de notificaciones por email/telegram en caso de fallo.
 2. **Histórico de Horneados:** Guardar un log de los últimos horneados en LittleFS para descargar vía web.
+gar vía web.

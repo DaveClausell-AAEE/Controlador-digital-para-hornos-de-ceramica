@@ -3,8 +3,8 @@
 ## 🛠️ Hardware (Pausa por materiales)
 - [ ] Soldar resistencias de 10k (Pull-up) a 3.3V para los botones.
 - [ ] Mover botones a los nuevos pines:
-    - UP -> GPIO 36
-    - DOWN -> GPIO 39
+    - UP -> GPIO 36 (SVP)
+    - DOWN -> GPIO 39 (SVN)
     - OK -> GPIO 34
     - EXIT -> GPIO 35
 - [ ] Conectar Pin CS de la SD al GPIO 33.

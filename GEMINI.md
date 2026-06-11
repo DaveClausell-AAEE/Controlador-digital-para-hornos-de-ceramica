@@ -8,6 +8,12 @@ Este archivo contiene las directivas y el contexto técnico esencial para el des
 - **Persistencia:** Cualquier cambio en la configuración (PID, Brillo, Programas) debe persistirse en `LittleFS` usando la estructura `config.bin`.
 - **UI Responsiva:** Mantén el sistema de refresco basado en la bandera `necesitaRefresco` para evitar parpadeos innecesarios en la pantalla TFT.
 
+## 🔄 Gestión de Sesión y Coherencia
+Al iniciar cada sesión de trabajo, el agente debe realizar las siguientes validaciones obligatorias:
+1. **Sincronización Git:** Ejecutar `git status` y verificar si el estado local coincide con el repositorio remoto. Reportar cambios pendientes de commit o push.
+2. **Coherencia Documental:** Validar que el pinout y las funcionalidades descritas en `FSD.md` y `README.md` coincidan exactamente con lo implementado en el código fuente (`.ino`).
+3. **Estado de Pendientes:** Revisar `PENDIENTES.md` para retomar el contexto de las tareas físicas y de software activas.
+
 ## 🛠️ Especificaciones de Hardware y Pinout
 **Fuente de Verdad:** Consulta siempre el bloque de `#define` al inicio del archivo `.ino` más reciente en `/versiones/`.
 

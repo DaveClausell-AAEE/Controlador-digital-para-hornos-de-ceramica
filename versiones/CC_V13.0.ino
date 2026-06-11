@@ -25,10 +25,11 @@ SPIClass hspi(HSPI);
 #define LED_R_PIN     16
 #define LED_G_PIN     21
 #define LED_B_PIN     22
-#define BTN_UP_PIN    26
-#define BTN_DOWN_PIN  25
-#define BTN_OK_PIN    33
-#define BTN_EXIT_PIN  32
+#define BTN_UP_PIN    36 // SVP (Req. Pull-up externo)
+#define BTN_DOWN_PIN  39 // SVN (Req. Pull-up externo)
+#define BTN_OK_PIN    34 // (Req. Pull-up externo)
+#define BTN_EXIT_PIN  35 // (Req. Pull-up externo)
+#define SD_CS         33 
 #define TFT_LED       12 
 #define MAXCS         5
 
@@ -159,11 +160,11 @@ void sonarBuzzer(int duracion, int veces = 1);
 void setup() {
   Serial.begin(115200);
   
-  // Pines de Entrada
-  pinMode(BTN_UP_PIN, INPUT_PULLUP);
-  pinMode(BTN_DOWN_PIN, INPUT_PULLUP);
-  pinMode(BTN_OK_PIN, INPUT_PULLUP);
-  pinMode(BTN_EXIT_PIN, INPUT_PULLUP);
+  // Configuración de Botones (Requieren Pull-up externo a 3.3V)
+  pinMode(BTN_UP_PIN, INPUT);
+  pinMode(BTN_DOWN_PIN, INPUT);
+  pinMode(BTN_OK_PIN, INPUT);
+  pinMode(BTN_EXIT_PIN, INPUT);
   
   // Pines de Salida
   pinMode(RELAY_PIN, OUTPUT);
@@ -171,12 +172,14 @@ void setup() {
   pinMode(LED_R_PIN, OUTPUT);
   pinMode(LED_G_PIN, OUTPUT);
   pinMode(LED_B_PIN, OUTPUT);
+  pinMode(SD_CS, OUTPUT);
+  digitalWrite(SD_CS, HIGH);
   
   digitalWrite(RELAY_PIN, HIGH); // Off (Active Low)
   digitalWrite(BUZZER_PIN, LOW);
   
   // Aislamiento de pines no usados (Recomendación Industrial)
-  int pinsNoUsados[] = {0, 14, 23, 34, 35, 36, 39}; // Ejemplos de pines libres en devkit 38
+  int pinsNoUsados[] = {0, 2, 4, 14, 23, 25, 26, 32}; // Actualizado para V13.0
   for(int p : pinsNoUsados) pinMode(p, INPUT_PULLUP);
 
   if(!LittleFS.begin(true)) Serial.println("LittleFS error");
