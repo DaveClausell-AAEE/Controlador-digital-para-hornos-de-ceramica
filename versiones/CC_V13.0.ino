@@ -184,6 +184,12 @@ void setup() {
 
   if(!LittleFS.begin(true)) Serial.println("LittleFS error");
 
+  // --- PERSONALITY MODULE ---
+  if(SD.begin(SD_CS)) {
+    Serial.println("SD Detectada. Verificando integridad...");
+    verificarYClonarConfiguracionSD();
+  }
+
   // Iniciar buses SPI independientes
   hspi.begin(14, 13, 12, 5); // SCK, MISO, MOSI, SS
   vspi.begin(18, 19, 23, 15); // SCK, MISO, MOSI, SS (Standard VSPI)
@@ -680,6 +686,23 @@ void guardarConfiguracion() {
     f.write((uint8_t*)&brilloPantalla, sizeof(brilloPantalla));
     f.write((uint8_t*)&sonidoHabilitado, sizeof(sonidoHabilitado));
     f.close();
+  }
+}
+
+// --- PERSONALITY MODULE ---
+void verificarYClonarConfiguracionSD() {
+  if (SD.exists("/config.bin")) {
+    if (!LittleFS.exists("/config.bin")) {
+      Serial.println("Clonando configuración desde SD a LittleFS...");
+      File source = SD.open("/config.bin", "r");
+      File target = LittleFS.open("/config.bin", "w");
+      if (source && target) {
+        while (source.available()) target.write(source.read());
+        target.close();
+        source.close();
+        Serial.println("Clonación exitosa.");
+      }
+    }
   }
 }
 
