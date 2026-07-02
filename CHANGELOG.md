@@ -4,7 +4,29 @@ Este archivo registra la evolución del software, las nuevas funcionalidades y l
 
 ---
 
-## [V13.0] - 2026-04-14 (Actual)
+## [14.0] - 2026-07-02 (Actual)
+### 💾 Personality Module & Dual Persistence Sincronizada
+- **Persistencia Dual (Mirroring):**
+    - Sincronización en tiempo real de `config.bin` entre LittleFS y la tarjeta SD.
+    - Los cambios en programas, calibración, brillo, PID y sonido se escriben simultáneamente en ambos medios.
+- **Personality Module (Restauración Bidireccional):**
+    - Al inicio, si LittleFS está vacío pero hay una tarjeta SD, se clona la configuración desde la SD de forma automática.
+    - Si existe configuración en LittleFS pero no en la SD (tarjeta nueva), se genera un backup inicial en la SD automáticamente.
+    - Permite el reemplazo directo y rápido de módulos ESP32 en campo sin pérdida de datos del horno.
+- **Aviso Visual de SD:**
+    - Indicador de estado en la esquina superior derecha de la barra de estado de la pantalla TFT: muestra `SD` en verde si está correctamente montada o `NO SD` en rojo si falta o falló la tarjeta.
+- **Feedback Visual RGB:**
+    - Se actualizó el LED de estado para que muestre de forma persistente color **Azul** en standby/menús, **Naranja** al calentar, **Verde** al finalizar/mantener y **Rojo** en caso de fallo.
+
+## [13.0] - 2026-06-11
+### ✅ Hito: Validación de Hardware V13.0 Completa
+- **Arquitectura:** Validado el nuevo pinout industrial (Botones en 34-39, SD en 33).
+- **Pantalla:** Control de backlight (GPIO 12) implementado y verificado.
+- **SD Card:** Corregida inestabilidad del bus SPI mediante reducción de frecuencia a 4MHz y gestión de CS.
+- **Periféricos:** Verificado funcionamiento de Relé (Active-LOW), Buzzer y LED RGB.
+- **Diagnóstico:** Creado `Diagnostic_V13_Full` como herramienta de referencia para soporte técnico.
+
+## [13.0] - 2026-04-14
 ### 🏗️ Arquitectura de Grado Industrial
 - **Dual SPI Bus:**
     - Implementada separación física de buses: **HSPI** exclusivo para el sensor MAX31855 y **VSPI** para la pantalla TFT.

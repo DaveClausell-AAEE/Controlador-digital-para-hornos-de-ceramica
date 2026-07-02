@@ -11,7 +11,7 @@ Este proyecto es un controlador de temperatura profesional para hornos de cerám
 - **Servidor Web de Monitoreo:** Visualiza la temperatura y el estado en tiempo real.
 - **Seguridad Industrial:** Watchdog térmico, Autorecovery y alarmas sonoras/visuales.
 
-## 🛠️ Hardware y Pinout (V13.0)
+## 🛠️ Hardware y Pinout (V13.0 Industrial + Personality Module)
 | Componente | Pin ESP32 | Función | Bus / Tipo |
 |------------|-----------|---------|------------|
 | **Relé (Ext)** | GPIO 17 | Control Resistencia (Active LOW) | Digital |
@@ -19,13 +19,15 @@ Este proyecto es un controlador de temperatura profesional para hornos de cerám
 | **LED RGB (R)** | GPIO 16 | Estado (Rojo) | Digital |
 | **LED RGB (G)** | GPIO 21 | Estado (Verde) | Digital |
 | **LED RGB (B)** | GPIO 22 | Estado (Azul) | Digital |
-| **Botón UP**| GPIO 26 | Navegación | Digital (PULLUP) |
-| **Botón DOWN**| GPIO 25 | Navegación | Digital (PULLUP) |
-| **Botón OK** | GPIO 33 | Confirmar / Editar | Digital (PULLUP) |
-| **Botón EXIT**| GPIO 32 | Volver / Reset (Combo) | Digital (PULLUP) |
+| **Botón UP**| GPIO 36 (SVP) | Navegación | Input Only (Ext Pull-up) |
+| **Botón DOWN**| GPIO 39 (SVN) | Navegación | Input Only (Ext Pull-up) |
+| **Botón OK** | GPIO 34 | Confirmar / Editar | Input Only (Ext Pull-up) |
+| **Botón EXIT**| GPIO 35 | Volver / Reset (Combo) | Input Only (Ext Pull-up) |
 | **TFT LED** | GPIO 12 | Brillo Pantalla | PWM |
+| **SD CS** | GPIO 33 | Selección Tarjeta SD | **VSPI** |
 | **Sensor (K)** | SPI (HSPI) | MAX31855 (CLK: 14, MISO: 13, CS: 5) | **HSPI** |
 | **Pantalla** | SPI (VSPI) | ILI9341 (SCK: 18, MISO: 19, MOSI: 23, CS: 15) | **VSPI** |
+
 
 ## 📶 Configuración WiFi
 1. Si no hay red, busque la WiFi `HORNO-CONFIG` en su móvil.
