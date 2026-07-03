@@ -1,0 +1,12 @@
+# Artefactos de compilación Arduino/ESP32
+temp_build/
+build/
+*.o
+*.d
+*.elf
+*.bin
+*.map
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
